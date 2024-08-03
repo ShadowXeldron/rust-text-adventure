@@ -3,7 +3,7 @@
 // Import libraries
 use read_input::prelude::*;
 use clearscreen::clear;
-use rand::prelude::*;
+
 use std::str::SplitWhitespace;
 
 // Include files
@@ -93,22 +93,22 @@ pub static castle_1f_throne_room_corridor: Zone = Zone {
 // MOVE THESE BACK INTO zones.rs EVENTUALLY!
 
 fn main() {
-    let player_name: String;
+    
     //let player_title: String = "Newbie".to_string();
-    let mut player_alignment: i8 = 0;
+    let player_alignment: i8 = 0;
 
-    let mut player_level: usize = 1;
-    let mut player_hp: usize = 20;
-    let mut player_mp: usize = 10;
-    let mut player_exp: usize = 0;
-    let mut player_bonus_points: usize = 15;
+    let player_level: usize = 1;
+    let player_hp: usize = 20;
+    let player_mp: usize = 10;
+    let _player_exp: usize = 0;
+    let _player_bonus_points: usize = 15;
 
     // Character Stats
-    let mut player_strength: usize = 5;
-    let mut player_dexterity: usize = 5;
-    let mut player_constitution: usize = 5;
-    let mut player_intelligence: usize = 5;
-    let mut player_spirit: usize = 5;
+    let _player_strength: usize = 5;
+    let _player_dexterity: usize = 5;
+    let _player_constitution: usize = 5;
+    let _player_intelligence: usize = 5;
+    let _player_spirit: usize = 5;
 
     //clear();
     println!("Hello, world!");
@@ -119,7 +119,7 @@ fn main() {
     // New game startup sequence;
 
     print!("Enter player name: ");
-    player_name = input::<String>().get();
+    let player_name: String = input::<String>().get();
     clear();
     println!("{}, be ready to die miserably", player_name);
 
@@ -162,10 +162,10 @@ fn show_stat_row(name: String, title: String, level: usize, exp: usize, health: 
 fn player_action(zone: Zone) {
     
     loop {
-        let action: String;
+        
 
         print!("What do you want to do? \n > ");
-        action = input::<String>().get().to_lowercase(); // This is so it can be case insensitive
+        let action: String = input::<String>().get().to_lowercase(); // This is so it can be case insensitive
         
         // I **REALLY** NEED TO OPTIMISE THIS!
         let holder: SplitWhitespace = action.split_whitespace();
@@ -183,7 +183,7 @@ fn player_action(zone: Zone) {
                 println!("You are Name the Title\nYou are in the place you are in\nYou are aligned\nYou are conditioned"),
             
             "take" =>
-                if zone.objects.clone().expect("Invalid Object").contains(&noun) {break}
+                if zone.objects.expect("Invalid Object").contains(&noun) {break}
                 else {println!("You can't go {noun}")}
             
             &_ => println!("Unknown Command")
@@ -237,7 +237,7 @@ fn get_alignment(align: i8) -> String
         name = "unaligned";
     }
 
-    return name.to_string()
+    name.to_string()
 }
 
 fn get_title(align: i8, level: usize) -> String
@@ -367,6 +367,6 @@ fn get_title(align: i8, level: usize) -> String
         title = "Traveler"
     }
 
-    return title.to_string()
+    title.to_string()
 
 }
