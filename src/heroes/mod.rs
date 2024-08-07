@@ -2,7 +2,7 @@ pub mod chargenseq;
 use crate::{Stats, ElementalEffects, LEVEL_CAP};
 use crate::attacks::Attack;
 use crate::items::*;
-use rand::Rng;
+
 use crate::input;
 
 // Hero definition. Included to make Clippy shut up.
@@ -129,7 +129,7 @@ pub struct Equipment<'a> {
 impl<'a> Equipment<'a> {
     pub fn equip_item(&mut self, item: Item<'a>) {
         // Decide item slot based on the item passed in
-        let slot: u8 = item.equipment_data.clone().unwrap().slot;
+        let slot: u8 = item.equipment_data.unwrap().slot;
 
         match slot { // Equip the item in the necessary slot
             EQUIP_HEAD => self.head = Some(item),

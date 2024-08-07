@@ -83,34 +83,23 @@ pub fn generate_character(character_name: &str) -> Hero {
             }
 
             print!("How many bonus points do you want to spend on this {stat_name}? (You have {bonus_points} bonus point(s) remaining): ");
-            let points_to_use: usize = input().get();
+            let input_points: isize = input().get();
+
 
             // WARNING! This features elseifs in elseifs in elseifs which will most likely cause you to throw up            
-               
-            if points_to_use > bonus_points // If you try to use more bonus points than you have
-            {
-                println!("You do not have that many bonus points!");
-            }
-                // TODO: Add negotiation to use your remaining bonus points instead
 
-            else if points_to_use == 0
+            if input_points < 0 // if you are REMOVING stat points
             {
-                break; // Do nothing
-            }
-
-            else if points_to_use < 0 // if you are REMOVING stat points
-            {
-                if (compare_stat + points_to_use) > compare_stat // Minus numbers are weird
-                {
+                if input_points.abs() > compare_stat.try_into().unwrap() { // Minus numbers are weird
                     println!("You cannot lower a stat below 1");
                 }
 
-                else
-                {
-                    print!("Are you sure you want to remove {} from {stat_name}? (y/n): ", points_to_use);
+                else {
+                    print!("Are you sure you want to remove {} from {stat_name}? (y/n): ", input_points.abs());
                     
                     if input::<String>().get() == "y"
                     {
+                        let points_to_use: usize = input_points.try_into().unwrap();
                         // Lower the stat and increase bonus points. This blantantly exploits the bizzare quirks of minus numbers.
                         compare_stat += points_to_use;
                         bonus_points -= points_to_use;
@@ -135,39 +124,52 @@ pub fn generate_character(character_name: &str) -> Hero {
                     }
                 }
             }
+            if input_points > bonus_points.try_into().unwrap() // If you try to use more bonus points than you have
+            {
+                println!("You do not have that many bonus points!");
+            }
 
-                        
-            // Now for actually adding stat points
             else {
-                print!("Are you sure you want to invest {points_to_use} in {stat_name}? (y/n): ");
-                if input::<String>().get() == "y" {
-                    bonus_points -= points_to_use;
+                let points_to_use: usize = input_points.try_into().unwrap();
 
-                    // Now apply stat changes
-                    match chosen_stat {
-                        1 =>
-                            character_strength += points_to_use,
-                        2 =>
-                            character_dexterity += points_to_use,
-                        3 =>
-                            character_constitution += points_to_use,
-                        4 =>
-                            character_intelligence += points_to_use,
-                        5 =>
-                            character_spirit += points_to_use,
-                        _ => panic!("Invalid stat number!")
+                if points_to_use == 0 // If you overcharged
+                {
+                    break; // Do nothing
+                }
+
+                // Now for actually adding stat points
+                else {
+                    print!("Are you sure you want to invest {points_to_use} in {stat_name}? (y/n): ");
+                    if input::<String>().get() == "y" {
+                        bonus_points -= points_to_use;
+
+                        // Now apply stat changes
+                        match chosen_stat {
+                            1 =>
+                                character_strength += points_to_use,
+                            2 =>
+                                character_dexterity += points_to_use,
+                            3 =>
+                                character_constitution += points_to_use,
+                            4 =>
+                                character_intelligence += points_to_use,
+                            5 =>
+                                character_spirit += points_to_use,
+                            _ => panic!("Invalid stat number!")
+                        }
                     }
                 }
+            
             }
         }
     }
 
-    let character_hp: usize = (character_constitution * 1) + ((character_strength / 2) + 1);
-    let character_mp: usize = (character_intelligence * 1) + character_spirit + 1;
+    let character_hp: usize = character_constitution + ((character_strength / 2) + 1);
+    let character_mp: usize = character_intelligence + character_spirit + 1;
 
     // Return the hero
     println!("Generated hero!");
-    return Hero {
+    Hero {
         name: character_name,
         max_hp: character_hp,
         hp: character_hp,
@@ -199,7 +201,7 @@ pub fn generate_character(character_name: &str) -> Hero {
         exp: 0,
         movelist: &[]
 
-    };
+    }
 
     // Absolute fallback in case things go haywire
     //else

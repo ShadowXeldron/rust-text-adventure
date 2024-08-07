@@ -82,14 +82,12 @@ pub struct WeaponData {
     pub init_mod: usize,
     pub hit_rate: usize,
     pub element_override: Option<usize>, // Overrides the element used for the flat attack. If None, bases element on the weapon type
-    //phantom: PhantomData<&'a bool>
 }
 
 #[derive(Copy, Clone)]
 pub struct ArmourData {
     pub ac: usize, // Armour class
     pub mr: isize, // Magic Resistance
-    //phantom: PhantomData<&'a bool>
 }
 
 pub const ITEM_IRON_SWORD: Item = Item {

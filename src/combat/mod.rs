@@ -6,7 +6,7 @@ use crate::dicerolls::*;
 
 // Load externals
 use std::cmp::Reverse;
-use rand::prelude::*;
+
 use read_input::shortcut::input;
 
 // These are probably redundant but I've included them to make modification easier.
@@ -103,13 +103,13 @@ pub fn battle_start(players: &mut [Hero], baddies: &mut [Mob] /*slice filled wit
     let mut dmg_mode: u8; // Used for deciding whether damage is dealt nomrmally, reflected or absorbed
     let mut attack: Attack; // Attack to use
     let mut command: u8; // Used to select the player's command
-    let mut enable_player_commands: bool = false;
+    let mut enable_player_commands: bool;
 
     // Roll for initiative
 
     println!("{} draws near. Go forth, {}!", baddies[0].name, players[0].name);
 
-    let mut turn_count: usize = 0; // Increment at the start of each turn
+    let mut turn_count: usize = 1; // Increment at the start of each turn
 
     // Start battle loop
     loop { // Break once a battle end command is signaled
@@ -242,7 +242,7 @@ pub fn battle_start(players: &mut [Hero], baddies: &mut [Mob] /*slice filled wit
                 // Now use the attack
                  let target: usize;
 
-                if baddies.len() == 0 {target = 0}
+                if baddies.is_empty() {target = 0}
                 else {target = 0} // This should prompt the player to choose an enemy
 
                 // Perform elemental checks
@@ -461,13 +461,13 @@ fn generate_weapon_attack(weapon_type: usize, weapon_accuracy: usize) -> Attack<
 
 // Returns true if the battle was resolved peacefully. Otherwise returns false if negotiations couldn't happen
 fn start_negotiation(hero: Hero, mob: Mob) -> bool {
-    let mut command: u8; // Used to select the player's command
+     // Used to select the player's command
 
     // This next bit should pull from an enemy's dialogue tree. This may have to be defined as a JSON or something.
 
     // Generic actions
     println!("1) Persuade (intelligence saving throw)\n2) Show Mercy (spirit saving throw)\n3) Threaten (strength saving throw)");
-    command = input::<u8>().get();
+    let command: u8 = input::<u8>().get();
 
     match command {
         1 => {
@@ -490,12 +490,10 @@ fn start_negotiation(hero: Hero, mob: Mob) -> bool {
                     } else {println!("\"I'll fight to the bitter end...\"")}
                 }
 
-            else {
-                if do_saving_throw(hero.stats.intelligence, 10, ROLL_NORMAL) {
-                    println!("\"...fine.\"");
-                    return true
-                } else {println!("\"No way!\"")}
-            }
+            else if do_saving_throw(hero.stats.intelligence, 10, ROLL_NORMAL) {
+                println!("\"...fine.\"");
+                return true
+            } else {println!("\"No way!\"")}
         },
 
         2 => {
@@ -516,12 +514,10 @@ fn start_negotiation(hero: Hero, mob: Mob) -> bool {
                     } else {println!("\"Just finish me off, you coward...\"")}
                 }
 
-            else {
-                if do_saving_throw(hero.stats.spirit, 10, ROLL_NORMAL) {
-                    println!("\"I'm going home.\"");
-                    return true
-                } else {println!("\"You fool!\"")}
-            }
+            else if do_saving_throw(hero.stats.spirit, 10, ROLL_NORMAL) {
+                println!("\"I'm going home.\"");
+                return true
+            } else {println!("\"You fool!\"")}
         },
 
         3 => {
@@ -542,12 +538,10 @@ fn start_negotiation(hero: Hero, mob: Mob) -> bool {
                     } else {println!("\"Just finish me off, you coward...\"")}
                 }
 
-            else {
-                if do_saving_throw(hero.stats.spirit, 10, ROLL_NORMAL) {
-                    println!("\"AAAAAAAAAAAH!!!!!!\"\nThey ran away!");
-                    return true
-                } else {println!("\"Your taunts are meaningless!\"")}
-            }
+            else if do_saving_throw(hero.stats.spirit, 10, ROLL_NORMAL) {
+                println!("\"AAAAAAAAAAAH!!!!!!\"\nThey ran away!");
+                return true
+            } else {println!("\"Your taunts are meaningless!\"")}
         }
 
         _ => {println!("The enemy didn't understand what you were trying to do.")}

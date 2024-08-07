@@ -30,7 +30,7 @@ pub fn do_saving_throw(stat: usize, dc: usize, advantage: u8) -> bool {
     roll += stat / 3;
 
     // If the dice roll is equal to or exceeds the difficulty class, return true. Otherwise return false.
-    return roll > dc
+    roll > dc
 }
 
 /*

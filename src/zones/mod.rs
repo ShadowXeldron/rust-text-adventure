@@ -1,3 +1,6 @@
+use crate::Mob;
+mod encounters; use crate::zones::encounters::*;
+
 #[derive(Copy, Clone)]
 pub struct Zone<'a> {
     pub name: &'a str,
@@ -6,7 +9,7 @@ pub struct Zone<'a> {
     pub objects: Option<&'a [&'a str]>, // Replace this with a proper item check
     pub directions: &'a Connections<'a>,
     pub encounter_rate: u8, // base encounter rate value out of 100
-    // encounter_table: (a vector full of enemy definitions)
+    pub random_encounters: Option<&'a [NPC<'a>]>,
     // script: (area-specific stuff for example taking damage in a poison area)
 }
 
@@ -15,9 +18,9 @@ impl Zone<'_> {
         // Iterate through NPC array
         let npc_list = self.npcs.expect("NPC list empty!");
 
-        for counter in 0..npc_list.len() {
-            if npc_list[counter].name == npc {
-                println!("{}", npc_list[counter].dialogue);
+        for counter in npc_list {
+            if counter.name == npc {
+                println!("{}", counter.dialogue);
                 return
             }
         }
@@ -39,12 +42,26 @@ pub struct Connections<'a> {
 
 #[derive(Copy, Clone)]
 pub struct NPC<'a> {
-    pub name: &'a str,
-    pub dialogue: &'a str,
+    pub name: &'a str, // Enemy name used in the parser
+    pub dialogue: &'a str, // Text that always shows when you talk to the NPC
+    pub fight_table: Option<&'a [Mob<'a>]>, // Table of random encounters, used for the attack command or NPCs spawned randomly
     // Should add an FnMut for running custom events
     //  pub event_talk
     //  pub event_attack
-    // Should also include an encounter group for in case you attack the NPC
+}
+
+impl<'a> NPC<'a> {
+    
+    pub fn get_exp_from_encounters(&self) -> usize {
+        let mut exp_drop: usize = 0;
+        // Iterate through table and reward EXP for all foes (to account for when support for enemy formations is properly added)
+        for counter in self.fight_table.unwrap() {
+            exp_drop += counter.exp_reward
+        }
+
+        exp_drop
+    }
+    
 }
 
 // The Castle
@@ -61,12 +78,13 @@ pub static CASTLE_1F_THRONE_ROOM: Zone = Zone {
     npcs: Some(&[
 
         NPC {name: "king",
-            dialogue: "You stand before the obese monarch of the land and he begins to talk in a somewhat unimpressed tone. \"Didn't I tell you to go and kill that giant? If you don't get a move on I- uh, WE will not ne able to have dinner!\""},
+            dialogue: "You stand before the obese monarch of the land and he begins to talk in a somewhat unimpressed tone. \"Didn't I tell you to go and kill that giant? If you don't get a move on I- uh, WE will not ne able to have dinner!\"",
+            fight_table: None},
 
         NPC {name: "guard",
-            dialogue: "The guard turns toward you and begins to speak.\n\"Please hurry up, if you don't I'll never hear the end of it. You should go to the armoury: we have some equipment in there that will be indespensible on your quest. It might also be visiting the court mage on top of the northwest tower as well, since he knows all about magic.\""},
+            dialogue: "The guard turns toward you and begins to speak.\n\"Please hurry up, if you don't I'll never hear the end of it. You should go to the armoury: we have some equipment in there that will be indespensible on your quest. It might also be visiting the court mage on top of the northwest tower as well, since he knows all about magic.\"", fight_table: None},
 
-        NPC {name: "queen", dialogue: "You see no queen in the vicinity and proceed to call the king maidenless. He retorts by stating that Elden Ring memes aren't funny anymore."}
+        NPC {name: "queen", dialogue: "You see no queen in the vicinity and proceed to call the king maidenless. He retorts by stating that Elden Ring memes aren't funny anymore.", fight_table: None}
     ]),
     objects: Some(&["torch"]),
 
@@ -78,13 +96,15 @@ pub static CASTLE_1F_THRONE_ROOM: Zone = Zone {
         west: None,
         up: None,
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 pub static CASTLE_1F_THRONE_ROOM_CORRIDOR: Zone = Zone {
     name: "Castle 1F: Throne Room Corridor",
     text: "You stand in a great hallway decorated in paintings and tapestries depicting the land's many victories. A row of shiny armoured suits lines the corridor.\nTo your north is the entrance to the castle's throne room, and to south is the southern wing of the castle.",
-    encounter_rate: 255,
+    encounter_rate: 255, // Temporary feature for battle testing
     npcs: None,
     objects: None,
 
@@ -95,14 +115,16 @@ pub static CASTLE_1F_THRONE_ROOM_CORRIDOR: Zone = Zone {
         west: None,
         up: None,
         down: None,
-    }
+    },
+
+    random_encounters: Some(RANDOM_ENCOUNTER_PEBBLE)
 };
 
 // Corridors
 pub static CASTLE_1F_SOUTH_CORRIDOR: Zone = Zone {
     name: "Castle 1F: South Corridor",
     text: "You are in the south wing.\nTo your north is the entrance to the castle's throne room, to your east is the southeast tower and to your west is the southwest tower.",
-    encounter_rate: 20,
+    encounter_rate: 0,
     npcs: None,
     objects: None,
 
@@ -113,13 +135,15 @@ pub static CASTLE_1F_SOUTH_CORRIDOR: Zone = Zone {
         west: Some(&CASTLE_1F_SOUTHWEST_TOWER),
         up: None,
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 pub static CASTLE_1F_NORTH_CORRIDOR: Zone = Zone {
     name: "Castle 1F: North Corridor",
     text: "You are in the north wing.\nTo your east is the northeast tower, and to your west is the northwest tower.",
-    encounter_rate: 20,
+    encounter_rate: 0,
     npcs: None,
     objects: None,
 
@@ -130,13 +154,15 @@ pub static CASTLE_1F_NORTH_CORRIDOR: Zone = Zone {
         west: Some(&CASTLE_1F_NORTHWEST_TOWER),
         up: None,
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 pub static CASTLE_1F_EAST_CORRIDOR: Zone = Zone {
     name: "Castle 1F: East Corridor",
     text: "You are in the east wing.\nTo your north is the northeast tower, and to your south is the southeast tower.",
-    encounter_rate: 20,
+    encounter_rate: 0,
     npcs: None,
     objects: None,
 
@@ -147,13 +173,15 @@ pub static CASTLE_1F_EAST_CORRIDOR: Zone = Zone {
         west: None,
         up: None,
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 pub static CASTLE_1F_WEST_CORRIDOR: Zone = Zone {
     name: "Castle 1F: West Corridor",
     text: "You are in the west wing.\nTo your north is the northwest tower, and to your south is the southwest tower.",
-    encounter_rate: 20,
+    encounter_rate: 0,
     npcs: None,
     objects: None,
 
@@ -164,14 +192,16 @@ pub static CASTLE_1F_WEST_CORRIDOR: Zone = Zone {
         west: None,
         up: None,
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 // Towers
 pub static CASTLE_1F_SOUTHEAST_TOWER: Zone = Zone {
     name: "Castle 1F: Southeast Tower",
     text: "You are in the southeast tower.\nTo your west is the south wing, and to your north is the east wing.\nYou can go up and down the stairs.",
-    encounter_rate: 20,
+    encounter_rate: 0,
     npcs: None,
     objects: None,
 
@@ -182,13 +212,15 @@ pub static CASTLE_1F_SOUTHEAST_TOWER: Zone = Zone {
         west: Some(&CASTLE_1F_SOUTH_CORRIDOR),
         up: Some(&CASTLE_2F_SOUTHEAST_TOWER),
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 pub static CASTLE_1F_SOUTHWEST_TOWER: Zone = Zone {
     name: "Castle 1F: Southwest Tower",
     text: "You are in the southwest tower.\nTo your east is the south wing, and to your north is the west wing.\nYou can go up and down the stairs.",
-    encounter_rate: 20,
+    encounter_rate: 0,
     npcs: None,
     objects: None,
 
@@ -199,13 +231,15 @@ pub static CASTLE_1F_SOUTHWEST_TOWER: Zone = Zone {
         west: None,
         up: Some(&CASTLE_2F_SOUTHWEST_TOWER),
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 pub static CASTLE_1F_NORTHEAST_TOWER: Zone = Zone {
     name: "Castle 1F: Northeast Tower",
     text: "You are in the northeast tower.\nTo your west is the north wing, and to your south is the east wing.\nYou can go up and down the stairs.",
-    encounter_rate: 20,
+    encounter_rate: 0,
     npcs: None,
     objects: None,
 
@@ -216,13 +250,15 @@ pub static CASTLE_1F_NORTHEAST_TOWER: Zone = Zone {
         west: Some(&CASTLE_1F_NORTH_CORRIDOR),
         up: Some(&CASTLE_2F_NORTHEAST_TOWER),
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 pub static CASTLE_1F_NORTHWEST_TOWER: Zone = Zone {
     name: "Castle 1F: Northwest Tower",
     text: "You are in the northwest tower.\nTo your east is the north wing, and to your south is the east wing.\nYou can go up and down the stairs.",
-    encounter_rate: 20,
+    encounter_rate: 0,
     npcs: None,
     objects: None,
 
@@ -233,7 +269,9 @@ pub static CASTLE_1F_NORTHWEST_TOWER: Zone = Zone {
         west: None,
         up: Some(&CASTLE_2F_SOUTHWEST_TOWER),
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 // Castle 2F Towers
@@ -243,7 +281,7 @@ pub static CASTLE_2F_SOUTHEAST_TOWER: Zone = Zone {
     encounter_rate: 0,
     npcs: Some(&[
         NPC {name: "archer",
-            dialogue: "The archer beings talking but does not turn to face you.\n\"You really shouldn't barge into here and distract me like that. I've got to snipe any potentially dangerous threats that are coming towards the castle, and if I'm distracted I might not be able to do my job.\"\nSuddenly, screaming erupts from the town centre. While you can barely see past the archer's head, you faintly make out a hand carrying away what looks like a shipment of grain.\n\"See what I mean!?\""},
+            dialogue: "The archer beings talking but does not turn to face you.\n\"You really shouldn't barge into here and distract me like that. I've got to snipe any potentially dangerous threats that are coming towards the castle, and if I'm distracted I might not be able to do my job.\"\nSuddenly, screaming erupts from the town centre. While you can barely see past the archer's head, you faintly make out a hand carrying away what looks like a shipment of grain.\n\"See what I mean!?\"", fight_table: None},
     ]),
 
     objects: None,
@@ -255,7 +293,9 @@ pub static CASTLE_2F_SOUTHEAST_TOWER: Zone = Zone {
         west: None,
         up: None,
         down: Some(&CASTLE_1F_SOUTHEAST_TOWER),
-    }
+    },
+
+    random_encounters: None
 };
 
 pub static CASTLE_2F_SOUTHWEST_TOWER: Zone = Zone {
@@ -272,7 +312,9 @@ pub static CASTLE_2F_SOUTHWEST_TOWER: Zone = Zone {
         west: None,
         up: None,
         down: Some(&CASTLE_1F_SOUTHWEST_TOWER),
-    }
+    },
+
+    random_encounters: None
 };
 
 pub static CASTLE_2F_NORTHEAST_TOWER: Zone = Zone {
@@ -289,7 +331,9 @@ pub static CASTLE_2F_NORTHEAST_TOWER: Zone = Zone {
         west: None,
         up: None,
         down: Some(&CASTLE_1F_NORTHEAST_TOWER),
-    }
+    },
+
+    random_encounters: None
 };
 
 pub static CASTLE_2F_NORTHWEST_TOWER: Zone = Zone {
@@ -306,7 +350,9 @@ pub static CASTLE_2F_NORTHWEST_TOWER: Zone = Zone {
         west: None,
         up: Some(&CASTLE_3F_NORTHWEST_TOWER),
         down: Some(&CASTLE_1F_NORTHWEST_TOWER),
-    }
+    },
+
+    random_encounters: None
 };
 
 // Third floor
@@ -316,7 +362,7 @@ pub static CASTLE_3F_NORTHWEST_TOWER: Zone = Zone {
     encounter_rate: 0,
     npcs: Some(&[
         NPC {name: "wizard",
-            dialogue: "The wizard stops staring into the crystal ball and turns up to face you.\n\"I don't do anything yet, leave me alone!\"\nThe wizard goes back to looking at his crystal ball."},
+            dialogue: "The wizard stops staring into the crystal ball and turns up to face you.\n\"I don't do anything yet, leave me alone!\"\nThe wizard goes back to looking at his crystal ball.", fight_table: None}
             /* This wizard should have an event where he has different dialogue on the first visit and gives you a free spell.
 
                 First visit:
@@ -337,7 +383,9 @@ pub static CASTLE_3F_NORTHWEST_TOWER: Zone = Zone {
         west: None,
         up: None,
         down: Some(&CASTLE_2F_NORTHWEST_TOWER),
-    }
+    },
+
+    random_encounters: None
 };
 
 // Ground Floor
@@ -356,7 +404,9 @@ pub static CASTLE_GF_NORTHWEST_TOWER: Zone = Zone {
         west: None,
         up: Some(&CASTLE_2F_NORTHWEST_TOWER),
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 
@@ -374,7 +424,9 @@ pub static CASTLE_GF_ENTRANCE: Zone = Zone {
         west: None,
         up: None,
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 
@@ -394,7 +446,9 @@ pub static CASTLE_B1F_HALLWAY: Zone = Zone {
         west: None,
         up: None,
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 pub static CASTLE_B1F_DUNGEON: Zone = Zone {
@@ -411,7 +465,9 @@ pub static CASTLE_B1F_DUNGEON: Zone = Zone {
         west: None,
         up: None,
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 pub static CASTLE_B1F_TORTURE_CHAMBER: Zone = Zone {
@@ -428,7 +484,9 @@ pub static CASTLE_B1F_TORTURE_CHAMBER: Zone = Zone {
         west: None,
         up: None,
         down: None,
-    }
+    },
+
+    random_encounters: None
 };
 
 

@@ -123,11 +123,13 @@ fn player_action(zone: Zone, mut player: Hero) { // Hero parameter is temporary 
     let encroll: u8 = rand::thread_rng().gen_range(1..100);
     println!("Encounter roll: {}", encroll);
     if encroll < zone.encounter_rate {
-        println!("A bad guy is approaching!"); // Should decide on an encounter and do that
+        let encounters: &[NPC] = zone.random_encounters.unwrap();
+        let foe: NPC = encounters[rand::thread_rng().gen_range(0..encounters.len())]; // Pick a random encounter from a table and throw an exception if the area doesn't have an encounter table
+        println!("{}", foe.dialogue);
         match battle_start(&mut [player], &mut [MOB_PEBBLE]) {
             BATTLE_RESULT_VICTORY => {// Successful enemy kills
                 println!("You stand victorious over your assailant. \nThe party gained {} experience points from the battle!", MOB_PEBBLE.exp_reward);
-                player.gain_exp(MOB_PEBBLE.exp_reward)
+                player.gain_exp(foe.get_exp_from_encounters())
             },
 
             BATTLE_RESULT_FAILURE => {
@@ -152,118 +154,120 @@ fn player_action(zone: Zone, mut player: Hero) { // Hero parameter is temporary 
 
     }
 
-    while player.hp != 0 {
-        print!("What do you want to do? \n > ");
-        let action: String = input::<String>().get().to_lowercase(); // This is so it can be case insensitive
-        
-        // I **REALLY** NEED TO OPTIMISE THIS!
-        let holder: SplitWhitespace = action.split_whitespace();
-        let vec: Vec<&str> = holder.collect();
-        let verb: &str = vec[0];
-        let noun: &str = if vec.len() == 1 {""} else {vec[1]};
+    if player.hp != 0 {
+            loop {
+            print!("What do you want to do? \n > ");
+            let action: String = input::<String>().get().to_lowercase(); // This is so it can be case insensitive
 
-        //print!("{} {}", verb, noun);
+            // Find a way to convert inputs to lowercase at all times
+            let holder: SplitWhitespace = action.split_whitespace();
+            let vec: Vec<&str> = holder.collect();
+            let verb: &str = vec[0];
+            let noun: &str = if vec.len() == 1 {""} else {vec[1]};
 
-        match verb {
-            "go" | "move" =>
-                // If no direction is entered
-                if noun.is_empty() {println!("What direction? You can go Up, Down, North, East, South or West")}
-                else if noun == "up" || noun == "down" ||  noun == "north" || noun == "south" || noun == "east" || noun == "west" {
-                    // Not a very good implementation but I'm expecting Clippy to suggest an improvement for this
-                    match noun {
-                        "up" =>
-                            if zone.directions.up.is_some() {
-                                // Due to how Rust works, we need to dereference the option with an asterisk and also run the "unwrap" function on the option.
-                                player_action(*zone.directions.up.unwrap(), player);
-                                break
-                            }
-                            else {println!("There is nothing above you.")},
+            //print!("{} {}", verb, noun);
 
-                        "down" =>
-                            if zone.directions.down.is_some() {
-                                player_action(*zone.directions.down.unwrap(), player);
-                                break
-                            }
-                            else {println!("There is nothing below you.")},
+            match verb {
+                "go" | "move" =>
+                    // If no direction is entered
+                    if noun.is_empty() {println!("What direction? You can go Up, Down, North, East, South or West")}
+                    else if noun == "up" || noun == "down" ||  noun == "north" || noun == "south" || noun == "east" || noun == "west" {
+                        // Not a very good implementation but I'm expecting Clippy to suggest an improvement for this
+                        match noun {
+                            "up" =>
+                                if zone.directions.up.is_some() {
+                                    // Due to how Rust works, we need to dereference the option with an asterisk and also run the "unwrap" function on the option.
+                                    player_action(*zone.directions.up.unwrap(), player);
+                                    break
+                                }
+                                else {println!("There is nothing above you.")},
 
-                        "north" =>
-                            if zone.directions.north.is_some() {
-                                player_action(*zone.directions.north.unwrap(), player);
-                                break
-                            }
-                            else {println!("There is nothing to your north.")},
+                            "down" =>
+                                if zone.directions.down.is_some() {
+                                    player_action(*zone.directions.down.unwrap(), player);
+                                    break
+                                }
+                                else {println!("There is nothing below you.")},
 
-                        "south" =>
-                            if zone.directions.south.is_some() {
-                                player_action(*zone.directions.south.unwrap(), player);
-                                break
-                            }
-                            else {println!("There is nothing to your south.")},
+                            "north" =>
+                                if zone.directions.north.is_some() {
+                                    player_action(*zone.directions.north.unwrap(), player);
+                                    break
+                                }
+                                else {println!("There is nothing to your north.")},
 
-                        "east" =>
-                            if zone.directions.east.is_some() {
-                                player_action(*zone.directions.east.unwrap(), player);
-                                break
-                            }
-                            else {println!("There is nothing to your east.")},
+                            "south" =>
+                                if zone.directions.south.is_some() {
+                                    player_action(*zone.directions.south.unwrap(), player);
+                                    break
+                                }
+                                else {println!("There is nothing to your south.")},
 
-                        "west" =>
-                            if zone.directions.west.is_some() {
-                                player_action(*zone.directions.west.unwrap(), player);
-                                break
-                            }
-                            else {println!("There is nothing to your west.")},
+                            "east" =>
+                                if zone.directions.east.is_some() {
+                                    player_action(*zone.directions.east.unwrap(), player);
+                                    break
+                                }
+                                else {println!("There is nothing to your east.")},
 
-                        _ =>
-                            panic!("Invalid direction! \"{}\" somehow got through the check?", noun)
+                            "west" =>
+                                if zone.directions.west.is_some() {
+                                    player_action(*zone.directions.west.unwrap(), player);
+                                    break
+                                }
+                                else {println!("There is nothing to your west.")},
+
+                            _ =>
+                                panic!("Invalid direction! \"{}\" somehow got through the check?", noun)
+                        }
+
+
+                        //println!("That's correct")
+                    }
+                    else {println!("You can't go {noun}")}
+
+                "info" => {
+                    show_stat_row(player, get_title(0, player.stats.level));
+                    println!("You are {}", get_alignment(0))},
+
+                "take" | "get" =>
+                    if zone.objects.is_some() {//zone.objects.expect("Invalid Object").contains(&noun) {break}
+                        // Well then,
+                        if zone.objects.expect("Invalid Object").contains(&noun) {println!("Got a {}!", noun)}
+                        //println!("Somethings here but I don't know what")
+                        else if noun.is_empty() {println!("You didn't take anything.")}
+                        else {println!("That object isn't here.")}
                     }
 
+                    else {
+                        println!("There is nothing here that you can take.")
+                    }
 
-                    //println!("That's correct")
-                }
-                else {println!("You can't go {noun}")}
+                "talk" | "chat" =>
+                    if zone.npcs.is_some() {
+                        if noun.is_empty() {println!("You talked to nobody.")}
+                        else {zone.talk_npc(noun)}
+                    }
 
-            "info" => {
-                show_stat_row(player, get_title(0, player.stats.level));
-                println!("You are {}", get_alignment(0))},
-            
-            "take" | "get" =>
-                if zone.objects.is_some() {//zone.objects.expect("Invalid Object").contains(&noun) {break}
-                    // Well then,
-                    if zone.objects.expect("Invalid Object").contains(&noun) {println!("Got a {}!", noun)}
-                    //println!("Somethings here but I don't know what")
-                    else if noun.is_empty() {println!("You didn't take anything.")}
-                    else {println!("That object isn't here.")}
-                }
+                    else {
+                        println!("Nobody else is here.")
+                    }
 
-                else {
-                    println!("There is nothing here that you can take.")
-                }
+                "look" => println!("{}", zone.text),
 
-            "talk" | "chat" =>
-                if zone.npcs.is_some() {
-                    if noun.is_empty() {println!("You talked to nobody.")}
-                    else {zone.talk_npc(noun)}
-                }
+                "clear" => clear().expect("Couldn't clear screen"),
 
-                else {
-                    println!("Nobody else is here.")
-                }
+                "help" => println!("
+                List of commands:
 
-            "look" => println!("{}", zone.text),
+                go - Move to a connected area. You can go Up, Down, North, East, South or West
 
-            "clear" => clear().expect("Couldn't clear screen"),
+                info - Print information about the party
+                help - Shows this text
+                "),
 
-            "help" => println!("
-            List of commands:
-
-            go - Move to a connected area. You can go Up, Down, North, East, South or West
-
-            info - Print information about the party
-            help - Shows this text
-            "),
-
-            _ => println!("Unknown Command! Type \"help\" for more information.")
+                _ => println!("Unknown Command! Type \"help\" for more information.")
+            }
         }
     }
 }
@@ -320,131 +324,26 @@ fn get_alignment(align: i8) -> String
 fn get_title(align: i8, level: usize) -> String
 {
     let title: &str;
-    // Name-based title easter eggs
-    // If named Sonic, Amy, Shadow or Silver and you have at least 25 Dexterity
-    // title = "Hedgehog"
-
-    // If called Memphis Tenessse
-    //  title = "Alpha Gamer"
-
-    // If named Mario or Luigi and you have at least 15 Dexterity and intermediate proficiency in clubs
-    // title = "Plumber"
-
-    // If named Adol and you have Advanced proficiency in swords
-    // title = "Red"
-
-    // If named Arsene, Ren, Akira or Joker, have basic proficiency in knives and you have at least 10 Spirit and at least 15 Dexterity
-    //  title = "Trickster"
-
-    // If named Bruce or Batman and you're chaotic
-    //  title = "Dark Knight"
-
-    // If named Edward and you have at least one stat below 5
-    //  title = "Spoony"
-
-    // Negative stat based titles - always base these on the lowest stat
-    
-    // Strength
-    // title = "Weak"
-
-    // Constitution
-    // title = "Sickly"
-
-    // Dexterity
-    // title = "Slow"
-
-    // Intellect
-    // title = "Dumb"
-    // title = "Idiot"
-
-    // Spirit
-    // title = "Cursed"
-    // title = "Haunted"
-
-    //if all stats below 5
-    // title = "Wretched"
-
-    //if your total gold value - including all inventory items and gold in the bank - is below a certain amount
-    //  title = "Poor"
-    //  title = "Squalid"
 
     // Level based titles
-    if level < 6
-    {
+    if level < 6 {
         title = "Rookie"
     }
     
     // Alignment based titles
-    else if align > 120
-    {
+    else if align > 120 {
         title = "Paragon"
     }
     
-    else if align > -120
-    {
+    else if align > -120 {
         title = "Renegade"
-        // if named Joker, read "Clown Prince" instead
     }
 
-    
-    // Proficiency based titles
-
-    //if mastered all melee weapons
-    //  title = "Master of Arms"
-
-    //if mastered swords
-    //  title = "Sword Saint"
-
-    //if mastered axes
-    //  title = "Berserker"
-
-    //if mastered spears
-    //  title = "Dragoon"
-
-    //if mastered knives
-    //  title = "Night Blade"
-
-    //if mastered bows
-    //  title = "Deadeye"
-
-    //if mastered combat magic
-    // title = "Archmage"
-
-    //if mastered support magic
-    //  title = "Great Healer"
-
-    // Positive Stat based titles - unless forced, always base these on the highest stat!
-    // Strength stuff
-    // title = "Strong"
-    // title = "Burly"
-    // title = "Unstoppable"
-
-    // Constitution Stuff
-    // title = "Healthy"
-    // title = "Tough"
-    // title = "Immovable"
-
-    // Dexterity
-    // title = "Agile"
-    // title = "Swift"
-    
-    // Intelligence
-    // title = "Smart"
-    // title = "Wise"
-    // title = "Genius"
-
-    // Spirit
-    // title = "Spiritual"
-    // title = "Oracle"
-
-    // Absolute fallback
-    else
-    {
+    else {
         title = "Traveler"
     }
 
     title.to_string()
-
 }
 
 
