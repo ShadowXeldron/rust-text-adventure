@@ -3,6 +3,7 @@ use crate::{Stats, ElementalEffects, LEVEL_CAP};
 use crate::attacks::Attack;
 use crate::items::*;
 use rand::Rng;
+use crate::input;
 
 // Hero definition. Included to make Clippy shut up.
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
