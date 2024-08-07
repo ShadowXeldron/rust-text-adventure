@@ -1,149 +1,100 @@
 // This script is loosely based on this tutorial: https://python-text-adventure.readthedocs.io/en/latest/index.html
 
 // Import libraries
-use read_input::prelude::*;
-use clearscreen::clear;
-
-use std::str::SplitWhitespace;
+pub use read_input::prelude::*;
+pub use clearscreen::clear;
+pub use std::str::SplitWhitespace;
+use rand::Rng;
 
 // Include files
-//mod zones;
+pub mod zones;
+use crate::zones::*;
+
+pub mod combat;
+pub use crate::combat::*;
+pub use crate::combat::mobs::*;
+
+pub mod dicerolls;
+pub use crate::dicerolls::*;
+
+pub mod items;
+pub use crate::items::*;
+
+pub mod heroes;
+pub use crate::heroes::*;
+pub use crate::heroes::chargenseq::*;
 
 // All areas in the game are defined as Zones
 
-#[derive(Copy, Clone)]
-pub struct Zone<'a> {
-    name: &'a str,
-    text: &'a str,
-    npcs: Option<&'a [NPC<'a>]>,
-    objects: Option<&'a [&'a str]>, // Replace this with a proper item check
-    directions: &'a Connections<'a>,
-    // encounter_rate: usize // base encounter rate value out of 100
-    // encounter_table: (a vector full of enemy definitions)
-    // script: (area-specific stuff for example taking damage in a poison area)
+// Constants
+// Global level cap for characters
+pub const LEVEL_CAP: usize = 99;
+
+// Define structs
+#[derive(Copy, Clone, PartialEq, PartialOrd)]
+pub struct Stats {
+    // Universal character stats
+    pub level: usize, // Affects all stats
+    pub constitution: usize, // Used to calculate base HP and natural damage reduction
+    pub strength: usize, // Used to calculate physical attack power and base HP
+    pub dexterity: usize, // Used to calculate accuracy, evasion and initiative
+    pub intelligence: usize, // Used to calculate magic damage and base MP
+    pub spirit: usize, // Used to calculate magic resistance and base MP
+    pub ac: usize, // Armour Class - used to calculate physical damage reduction
+    pub mr: usize, // Magic Resistance - used to calculate magical damage reduction
+    pub wp: usize, // Weapon Power - used to calculate physical attack damage
+    pub sp: usize, // Spell Power - used to calculate magic attack damage
 }
 
-// Struct for setting up map connections
-pub struct Connections<'a> {
-    north: Option<&'a Zone<'a>>,
-    south: Option<&'a Zone<'a>>,
-    east: Option<&'a Zone<'a>>,
-    west: Option<&'a Zone<'a>>,
-    up: Option<&'a Zone<'a>>,
-    down: Option<&'a Zone<'a>>,
+#[derive(Copy, Clone, PartialEq, PartialOrd)]
+pub struct ElementalEffects<'a> {
+    pub weak: Option<&'a [usize]>, // Slice
+    pub resist: Option<&'a [usize]>,
+    pub immune: Option<&'a [usize]>,
+    pub heal: Option<&'a [usize]>,
+    pub reflect: Option<&'a [usize]>,
+    pub avoid: Option<&'a [usize]>, // Will always dodge this element unless it is forced to hit
 }
 
-#[derive(Copy, Clone)]
-pub struct NPC<'a> {
-    name: &'a str,
-    intro: Option<&'a str>,
-    dialogue: &'a str, // Printed in speech marks
-}
-
-
-pub static castle_1f_throne_room: Zone = Zone {
-    name: "Castle 1F: Throne Room",
-    text: "You stand in the throne room of the royal palace. Upon the throne sits the land's portly ruler, draped in a majestic red cloak and wearing a ruby-encrusted crown of solid gold upon his head.\nA distressed-looking royal guard stands near to the king.He is wearing ornately decorated armour and carries a gleaming sword and shield.\nAt the southern end of the room is a doorway that leads into a hallway that heads to the rest of the castle.",
-    // Behold, maximum dumbness
-    npcs: Some(&[
-        
-    NPC {name: "king", 
-        intro:  Some("You stand before the obese monarch of the land and he begins to talk in a somewhat unimpressed tone."),
-        dialogue: "Didn't I tell you to go and kill that giant? If you don't get a move on I- mean, WE will not ne able to have dinner!"}, 
-    
-    NPC {name: "guard", 
-        intro: Some("The guard turns toward you and begins to speak."), 
-        dialogue: "Please hurry up, if you don't I'll never hear the end of it. You should go to the armoury: we have some equipment in there that will be indespensible on your quest. It might also be visiting the court mage on top of the northwest tower as well"},
-    
-    NPC {name: "queen", intro: None, dialogue: "You see no queen in the vicinity and proceed to call the king maidenless. He retorts by stating that Elden Ring memes aren't funny anymore."}
-    ]),
-    objects: None,
-
-    // Wish there was a better way to do this...
-    directions: &Connections {
-        north: None,
-        south: Some(&castle_1f_throne_room_corridor),
-        east: None,
-        west: None,
-        up: None,
-        down: None,
-    }
-};
-
-pub static castle_1f_throne_room_corridor: Zone = Zone {
-    name: "Castle 1F: Throne Room Corridor",
-    text: "You stand in a great hallway decorated in paintings and tapestries depicting the land's many victories. A row of shiny armoured suits lines the corridor.\nTo your north is the entrance to the castle's throne room, and to south is the southern wing of the castle.",
-    npcs: None,
-    objects: None,
-
-    directions: &Connections {
-        north: Some(&castle_1f_throne_room),
-        south: None,
-        east: None,
-        west: None,
-        up: None,
-        down: None,
-    }
-
-    //directions: Connections {
-    //    north: castle_1f_throne_room.into()
-    //},
-};
-
-// MOVE THESE BACK INTO zones.rs EVENTUALLY!
-
+// Actual code begins here
 fn main() {
-    
-    //let player_title: String = "Newbie".to_string();
+    //let player.title: String = "Newbie".to_string();
     let player_alignment: i8 = 0;
 
-    let player_level: usize = 1;
-    let player_hp: usize = 20;
-    let player_mp: usize = 10;
-    let _player_exp: usize = 0;
-    let _player_bonus_points: usize = 15;
-
-    // Character Stats
-    let _player_strength: usize = 5;
-    let _player_dexterity: usize = 5;
-    let _player_constitution: usize = 5;
-    let _player_intelligence: usize = 5;
-    let _player_spirit: usize = 5;
-
     //clear();
-    println!("Hello, world!");
     println!("Really basic Rust (was python) text adventure");
+    //println!("\nAsk the player whether they want to load a save");
 
-    println!("\nAsk the player whether they want to load a save");
+    // To start with, generate a character
+    print!("Enter player name: ");
+    let binding = input::<String>().get();
+    let player_name: &str = binding.as_str();
+    let player = generate_character(player_name); // Temporary immutability while I test combat mechanics
 
     // New game startup sequence;
 
-    print!("Enter player name: ");
-    let player_name: String = input::<String>().get();
-    clear();
-    println!("{}, be ready to die miserably", player_name);
+    clear().expect("failed to clear screen");
+    println!("{}, be ready to die miserably", player.name);
 
-    println!("Add the character generation sequence here");
-    println!("Insert overly drawn out backstory here");
+    show_stat_row(player, get_title(player_alignment, player.stats.level));
+    player_action(CASTLE_1F_THRONE_ROOM, player);
 
-    clear();
-    show_stat_row(player_name, get_title(player_alignment, player_level), player_level, player_hp, player_mp, player_mp);
-    player_action(castle_1f_throne_room);
-
+    //exit(0) // Close the program peacefully when the game ends.
 }
 
 // Functions and whatnot. I already miss Python.
 
 // This code is probably bad... yet part of me thinks this is the right way to do it?
-fn show_stat_row(name: String, title: String, level: usize, exp: usize, health: usize, mana: usize) {
+fn show_stat_row(player: Hero, title: String) {
     println!(
         "
-        {name} the {title}
-    Level {level},     EXP: {exp}/XX (XX until next level)
-    HP: {health}/XX     MP: {mana}/XX    Status: Normal
+        {} the {title}
+    Level {},     EXP: {}/{} ({} until next level)
+    HP: {}/{}     MP: {}/{}    Status: Normal
     Area: Castle 1F: Throne Room
         "
-    );
+    , player.name, player.stats.level, player.exp, (5 * player.stats.level + player.stats.level), player.get_remaining_exp(), player.hp, player.max_hp, player.mp, player.max_mp);
+
 }
 
 // TODO: Spin these off into a seperate file, preferably not as functions
@@ -158,12 +109,50 @@ fn show_stat_row(name: String, title: String, level: usize, exp: usize, health: 
 }*/
 
 // Text parser. This might also be better off in its own file.
-// Also, rework it to use structs
-fn player_action(zone: Zone) {
-    
-    loop {
-        
+// Also, it's constantly calling itself which I don't think is particularly good code.
+fn player_action(zone: Zone, mut player: Hero) { // Hero parameter is temporary until I can figure out how to implement globals
+    // Terminate the game if you have run out of health
+    if player.hp == 0 {
+        println!("\n \x1b[31;1;4mGAME OVER!\x1b[0m \n");
+        return
+    }
 
+    println!("{}", zone.text);
+
+    // Roll for random encounter
+    let encroll: u8 = rand::thread_rng().gen_range(1..100);
+    println!("Encounter roll: {}", encroll);
+    if encroll < zone.encounter_rate {
+        println!("A bad guy is approaching!"); // Should decide on an encounter and do that
+        match battle_start(&mut [player], &mut [MOB_PEBBLE]) {
+            BATTLE_RESULT_VICTORY => {// Successful enemy kills
+                println!("You stand victorious over your assailant. \nThe party gained {} experience points from the battle!", MOB_PEBBLE.exp_reward);
+                player.gain_exp(MOB_PEBBLE.exp_reward)
+            },
+
+            BATTLE_RESULT_FAILURE => {
+                println!("You have perished upon the field of battle...");
+                player.hp = 0;
+                // Print "Game Over with ANSI codes"
+                println!("\n \x1b[31;1;4mGAME OVER!\x1b[0m \n")
+            },
+
+            BATTLE_RESULT_ESCAPE =>
+                println!("Successfully ran away from the battle."),
+                // Subtract a random percentage of money.
+                // println!("You dropped {} coins wile running away")
+
+            BATTLE_RESULT_TRUCE =>
+                println!("The enemy left to go and bother someone else."),
+
+            _ =>
+                println!("Suddenly, the enemy stopped existing.")
+
+        } // Temporary functionality. If you lose the battle, it's all going to end in tears.
+
+    }
+
+    while player.hp != 0 {
         print!("What do you want to do? \n > ");
         let action: String = input::<String>().get().to_lowercase(); // This is so it can be case insensitive
         
@@ -171,27 +160,115 @@ fn player_action(zone: Zone) {
         let holder: SplitWhitespace = action.split_whitespace();
         let vec: Vec<&str> = holder.collect();
         let verb: &str = vec[0];
-        let noun: &str;
-
-        // crash prevention
-        if vec.len() == 1 {noun = "EMPTY"} else {noun = vec[1]}
+        let noun: &str = if vec.len() == 1 {""} else {vec[1]};
 
         //print!("{} {}", verb, noun);
 
         match verb {
-            "info" =>
-                println!("You are Name the Title\nYou are in the place you are in\nYou are aligned\nYou are conditioned"),
-            
-            "take" =>
-                if zone.objects.expect("Invalid Object").contains(&noun) {break}
+            "go" | "move" =>
+                // If no direction is entered
+                if noun.is_empty() {println!("What direction? You can go Up, Down, North, East, South or West")}
+                else if noun == "up" || noun == "down" ||  noun == "north" || noun == "south" || noun == "east" || noun == "west" {
+                    // Not a very good implementation but I'm expecting Clippy to suggest an improvement for this
+                    match noun {
+                        "up" =>
+                            if zone.directions.up.is_some() {
+                                // Due to how Rust works, we need to dereference the option with an asterisk and also run the "unwrap" function on the option.
+                                player_action(*zone.directions.up.unwrap(), player);
+                                break
+                            }
+                            else {println!("There is nothing above you.")},
+
+                        "down" =>
+                            if zone.directions.down.is_some() {
+                                player_action(*zone.directions.down.unwrap(), player);
+                                break
+                            }
+                            else {println!("There is nothing below you.")},
+
+                        "north" =>
+                            if zone.directions.north.is_some() {
+                                player_action(*zone.directions.north.unwrap(), player);
+                                break
+                            }
+                            else {println!("There is nothing to your north.")},
+
+                        "south" =>
+                            if zone.directions.south.is_some() {
+                                player_action(*zone.directions.south.unwrap(), player);
+                                break
+                            }
+                            else {println!("There is nothing to your south.")},
+
+                        "east" =>
+                            if zone.directions.east.is_some() {
+                                player_action(*zone.directions.east.unwrap(), player);
+                                break
+                            }
+                            else {println!("There is nothing to your east.")},
+
+                        "west" =>
+                            if zone.directions.west.is_some() {
+                                player_action(*zone.directions.west.unwrap(), player);
+                                break
+                            }
+                            else {println!("There is nothing to your west.")},
+
+                        _ =>
+                            panic!("Invalid direction! \"{}\" somehow got through the check?", noun)
+                    }
+
+
+                    //println!("That's correct")
+                }
                 else {println!("You can't go {noun}")}
+
+            "info" => {
+                show_stat_row(player, get_title(0, player.stats.level));
+                println!("You are {}", get_alignment(0))},
             
-            &_ => println!("Unknown Command")
+            "take" | "get" =>
+                if zone.objects.is_some() {//zone.objects.expect("Invalid Object").contains(&noun) {break}
+                    // Well then,
+                    if zone.objects.expect("Invalid Object").contains(&noun) {println!("Got a {}!", noun)}
+                    //println!("Somethings here but I don't know what")
+                    else if noun.is_empty() {println!("You didn't take anything.")}
+                    else {println!("That object isn't here.")}
+                }
+
+                else {
+                    println!("There is nothing here that you can take.")
+                }
+
+            "talk" | "chat" =>
+                if zone.npcs.is_some() {
+                    if noun.is_empty() {println!("You talked to nobody.")}
+                    else {zone.talk_npc(noun)}
+                }
+
+                else {
+                    println!("Nobody else is here.")
+                }
+
+            "look" => println!("{}", zone.text),
+
+            "clear" => clear().expect("Couldn't clear screen"),
+
+            "help" => println!("
+            List of commands:
+
+            go - Move to a connected area. You can go Up, Down, North, East, South or West
+
+            info - Print information about the party
+            help - Shows this text
+            "),
+
+            _ => println!("Unknown Command! Type \"help\" for more information.")
         }
     }
 }
 
-fn get_alignment(align: i8) -> String 
+fn get_alignment(align: i8) -> String
 {
     let name: &str;
 
@@ -291,8 +368,6 @@ fn get_title(align: i8, level: usize) -> String
     //  title = "Poor"
     //  title = "Squalid"
 
-
-
     // Level based titles
     if level < 6
     {
@@ -338,9 +413,10 @@ fn get_title(align: i8, level: usize) -> String
     //if mastered support magic
     //  title = "Great Healer"
 
-    // Positive Stat based titles - unless always base these on the highest stat!
+    // Positive Stat based titles - unless forced, always base these on the highest stat!
     // Strength stuff
     // title = "Strong"
+    // title = "Burly"
     // title = "Unstoppable"
 
     // Constitution Stuff
@@ -370,3 +446,15 @@ fn get_title(align: i8, level: usize) -> String
     title.to_string()
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
