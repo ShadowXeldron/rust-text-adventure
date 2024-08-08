@@ -52,8 +52,8 @@ pub struct NPC<'a> {
 
 impl<'a> NPC<'a> {
     
-    pub fn get_exp_from_encounters(&self) -> usize {
-        let mut exp_drop: usize = 0;
+    pub fn get_exp_from_encounters(&self) -> u16 {
+        let mut exp_drop: u16 = 0;
         // Iterate through table and reward EXP for all foes (to account for when support for enemy formations is properly added)
         for counter in self.fight_table.unwrap() {
             exp_drop += counter.exp_reward

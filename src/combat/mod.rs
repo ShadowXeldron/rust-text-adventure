@@ -16,54 +16,51 @@ pub const BATTLE_RESULT_FAILURE: u8 = 1; // Total party kill. This is considered
 pub const BATTLE_RESULT_ESCAPE: u8 = 2; // Battle canceled by player escaping
 pub const BATTLE_RESULT_TRUCE: u8 = 3; // Peaceful resolution from negotiation
 
-const MOVE_PHYSICAL: usize = 0;
-const MOVE_MAGIC: usize = 1;
-const MOVE_STATUS: usize = 2;
-const MOVE_INSTANT_KILL: usize = 3;
+const MOVE_PHYSICAL: u8 = 0;
+const MOVE_MAGIC: u8 = 1;
+const MOVE_STATUS: u8 = 2;
+const MOVE_INSTANT_KILL: u8 = 3;
 
-const TARGET_FOE: usize = 0;
-const TARGET_SELF: usize = 1;
+const TARGET_FOE: u8 = 0;
+const TARGET_SELF: u8 = 1;
 
-const TYPE_NEUTRAL: usize = 0;
-const TYPE_SLASH: usize = 1;
-const TYPE_PIERCE: usize = 2;
-const TYPE_IMPACT: usize = 3;
+const TYPE_NEUTRAL: u8 = 0;
+const TYPE_SLASH: u8 = 1;
+const TYPE_PIERCE: u8 = 2;
+const TYPE_IMPACT: u8 = 3;
 
-const TYPE_FIRE: usize = 4;
-const TYPE_ICE: usize = 5;
-const TYPE_ELECTRIC: usize = 6;
-const TYPE_WIND: usize = 7;
-const TYPE_GROUND: usize = 8;
-const TYPE_DARK: usize = 9;
-const TYPE_LIGHT: usize = 10;
-
-// Set up globals
-
+const TYPE_FIRE: u8 = 4;
+const TYPE_ICE: u8 = 5;
+const TYPE_ELECTRIC: u8 = 6;
+const TYPE_WIND: u8 = 7;
+const TYPE_GROUND: u8 = 8;
+const TYPE_DARK: u8 = 9;
+const TYPE_LIGHT: u8 = 10;
 
 /*
 // Weapon type constants, for later
 
-const WEAPON_NONE: usize = 0;
+const WEAPON_NONE: u8 = 0;
 // Slash
-const WEAPON_SWORD: usize = 1;
-const WEAPON_GREATSWORD: usize = 2;
-const WEAPON_AXE: usize = 3;
-const WEAPON_GREATAXE: usize = 4;
+const WEAPON_SWORD: u8 = 1;
+const WEAPON_GREATSWORD: u8 = 2;
+const WEAPON_AXE: u8 = 3;
+const WEAPON_GREATAXE: u8 = 4;
 // Pierce
-const WEAPON_SPEAR: usize = 5;
-const WEAPON_POLEARM: usize = 6;
-const WEAPON_BOW: usize = 8;
+const WEAPON_SPEAR: u8 = 5;
+const WEAPON_POLEARM: u8 = 6;
+const WEAPON_BOW: u8 = 8;
 // Impact
-const WEAPON_CLUB: usize = 9;
-const WEAPON_HAMMER: usize = 10;
-const WEAPON_STAFF: usize = 11;
+const WEAPON_CLUB: u8 = 9;
+const WEAPON_HAMMER: u8 = 10;
+const WEAPON_STAFF: u8 = 11;
 // Unique
-const WEAPON_WAND: usize = 12;
-const WEAPON_KNIFE: usize = 13;
+const WEAPON_WAND: u8 = 12;
+const WEAPON_KNIFE: u8 = 13;*/
 
 // Array for checking weapon damage types, although for autogen knives will do slash or pierce damage depending on what's more effective
-static WEAPON_DAMAGE_TYPES: [usize; 13] = [TYPE_NEUTRAL /* Barehand */, TYPE_SLASH /* Sword */, TYPE_SLASH /* Greatsword */, TYPE_SLASH /* Axe */, TYPE_SLASH /* Greataxe */, TYPE_PIERCE /* Spear */, TYPE_PIERCE /* Polearm */, TYPE_PIERCE /* Bow */, TYPE_IMPACT /* Club */, TYPE_IMPACT /* Hammer */, TYPE_IMPACT /* Staff */, TYPE_NEUTRAL /* Wand */, TYPE_PIERCE /* Knife */];
-*/
+static WEAPON_DAMAGE_TYPES: [u8; 13] = [TYPE_NEUTRAL /* Barehand */, TYPE_SLASH /* Sword */, TYPE_SLASH /* Greatsword */, TYPE_SLASH /* Axe */, TYPE_SLASH /* Greataxe */, TYPE_PIERCE /* Spear */, TYPE_PIERCE /* Polearm */, TYPE_PIERCE /* Bow */, TYPE_IMPACT /* Club */, TYPE_IMPACT /* Hammer */, TYPE_IMPACT /* Staff */, TYPE_NEUTRAL /* Wand */, TYPE_PIERCE /* Knife */];
+
 // Constant array of string names for the elements
 static ELEMENT_NAMES: &[&str] = &["Neutral", "Slash", "Pierce", "Impact", "Fire", "Ice", "Electric", "Wind", "Ground", "Dark", "Light"];
 
@@ -82,21 +79,20 @@ pub fn battle_start(players: &mut [Hero], baddies: &mut [Mob] /*slice filled wit
     const DMG_REPEL: u8 = 2;
     const DMG_ABSORB: u8 = 3;
 
-    let mut damage: usize;
-
+    let mut damage: u16;
 
     // Establish baseline point values for each character
     for counter in 0..players.len() {
-        players[counter].max_hp = (players[counter].stats.constitution * players[counter].stats.level) + ((players[counter].stats.strength / 2) + players[counter].stats.level) + 10;
+        players[counter].max_hp = u16::from((players[counter].stats.constitution * players[counter].stats.level) + ((players[counter].stats.strength / 2) + players[counter].stats.level) + 10);
         players[counter].hp = players[counter].max_hp;
-        players[counter].max_mp = (players[counter].stats.intelligence * players[counter].stats.level) + players[counter].stats.spirit + players[counter].stats.level;
+        players[counter].max_mp = u16::from((players[counter].stats.intelligence * players[counter].stats.level) + players[counter].stats.spirit + players[counter].stats.level);
         players[counter].mp = players[counter].max_mp;
     }
 
     for counter in 0..baddies.len() {
-        baddies[counter].max_hp = (baddies[counter].stats.constitution * baddies[counter].stats.level) + ((baddies[counter].stats.strength / 2) + baddies[counter].stats.level);
+        baddies[counter].max_hp = u16::from((baddies[counter].stats.constitution * baddies[counter].stats.level) + ((baddies[counter].stats.strength / 2) + baddies[counter].stats.level));
         baddies[counter].hp = baddies[counter].max_hp;
-        baddies[counter].max_mp = (baddies[counter].stats.intelligence * baddies[counter].stats.level) + baddies[counter].stats.spirit + baddies[counter].stats.level;
+        baddies[counter].max_mp = u16::from((baddies[counter].stats.intelligence * baddies[counter].stats.level) + baddies[counter].stats.spirit + baddies[counter].stats.level);
         baddies[counter].mp = baddies[counter].max_mp;
     }
 
@@ -196,7 +192,7 @@ pub fn battle_start(players: &mut [Hero], baddies: &mut [Mob] /*slice filled wit
                             println!("{} attacks", players[counter].name);
 
                             // Aw crud we're back to the drawing board
-                            attack = generate_weapon_attack(TYPE_SLASH, 75);
+                            attack = generate_weapon_attack(players[counter].equipment.weapon);
                             break
                         }
 
@@ -240,7 +236,7 @@ pub fn battle_start(players: &mut [Hero], baddies: &mut [Mob] /*slice filled wit
                 }
 
                 // Now use the attack
-                 let target: usize;
+                let target: usize;
 
                 if baddies.is_empty() {target = 0}
                 else {target = 0} // This should prompt the player to choose an enemy
@@ -258,7 +254,7 @@ pub fn battle_start(players: &mut [Hero], baddies: &mut [Mob] /*slice filled wit
                         // Force attack to hit no matter what
                         attack.hit_rate = 101;
 
-                        println!("But the target absorbs {}!", ELEMENT_NAMES[attack.element]);
+                        println!("But the target absorbs {}!", ELEMENT_NAMES[usize::from(attack.element)]); // This was done because I really don't need usize for element descriptors
                         damage = calculate_damage(attack, players[0].stats, baddies[0].stats, baddies[0].elements) / 2;
                         println!("{} recovered {} HP!", baddies[0].name, damage);
                         baddies[0].hp += damage;
@@ -269,7 +265,7 @@ pub fn battle_start(players: &mut [Hero], baddies: &mut [Mob] /*slice filled wit
                         // Force attack to hit no matter what
                         attack.hit_rate = 101;
 
-                        println!("But the target reflects {}!", ELEMENT_NAMES[attack.element]);
+                        println!("But the target reflects {}!", ELEMENT_NAMES[usize::from(attack.element)]);
                         damage = calculate_damage(attack, players[0].stats, players[0].stats, baddies[0].elements);
 
                         println!("You took {damage} damage!");
@@ -329,7 +325,7 @@ pub fn battle_start(players: &mut [Hero], baddies: &mut [Mob] /*slice filled wit
 
                 TARGET_SELF => {
                     if attack.power > 0 {
-                        damage = baddies[0].stats.spirit + baddies[0].stats.level + attack.power;
+                        damage = u16::from(baddies[0].stats.spirit + baddies[0].stats.level + attack.power);
                         baddies[0].hp += damage;
                         if baddies[0].hp > baddies[0].max_hp {baddies[0].hp = baddies[0].max_hp}
                         println!("{} restored {} HP", baddies[0].name, damage)
@@ -355,17 +351,17 @@ pub fn battle_start(players: &mut [Hero], baddies: &mut [Mob] /*slice filled wit
 fn show_attack_info(attack: Attack) {
     println!("\n{}", attack.name);
     println!("MP Cost: {}", attack.cost);
-    println!("Element: {}   Base Power: {}   Hit Rate: {}%", ELEMENT_NAMES[attack.element], attack.power, attack.hit_rate);
+    println!("Element: {}   Base Power: {}   Hit Rate: {}%", ELEMENT_NAMES[usize::from(attack.element)], attack.power, attack.hit_rate);
     println!("\n{}", attack.desc);
 }
 
-fn do_accuracy_check(attack: Attack, user_stats: Stats, target_stats: Stats, avoid_elements: Option<&[usize]>) -> bool {
+fn do_accuracy_check(attack: Attack, user_stats: Stats, target_stats: Stats, avoid_elements: Option<&[u8]>) -> bool {
     // Base hit rates higher than 100 are garunteed hits
     if attack.hit_rate > 100 {return true};
 
     // Account for avoided elements
     if avoid_elements.is_some() && avoid_elements.expect("Invalid avoid element").contains(&attack.element) {
-        println!("This target always avoids {}", ELEMENT_NAMES[attack.element]);
+        println!("This target always avoids {}", ELEMENT_NAMES[usize::from(attack.element)]);
         return false
     }
 
@@ -386,11 +382,11 @@ fn do_accuracy_check(attack: Attack, user_stats: Stats, target_stats: Stats, avo
 }
 
 // I apologise for how horribly long this function is and my life would be so much easier if Rust allowed global variables
-fn calculate_damage(attack: Attack, user_stats: Stats, target_stats: Stats, target_elements: ElementalEffects) -> usize {
+fn calculate_damage(attack: Attack, user_stats: Stats, target_stats: Stats, target_elements: ElementalEffects) -> u16 {
 
     // Before doing anything, calculate accuracy and immunity
     if target_elements.immune.is_some() && target_elements.immune.expect("Invalid immune element").contains(&attack.element) {
-        println!("This target blocks {}", ELEMENT_NAMES[attack.element]);
+        println!("This target blocks {}", ELEMENT_NAMES[usize::from(attack.element)]);
         return 0
     }
 
@@ -400,19 +396,19 @@ fn calculate_damage(attack: Attack, user_stats: Stats, target_stats: Stats, targ
     }
 
     // If all goes well, calculate attack and defence
-    let atk: usize;
-    let def: usize;
+    let atk: u16;
+    let def: u16;
 
     if attack.category == MOVE_MAGIC {
-        atk = attack.power + user_stats.sp + user_stats.intelligence + user_stats.level;
-        def = (target_stats.mr + target_stats.spirit + target_stats.level) / 2;
+        atk = u16::from(attack.power + user_stats.sp + user_stats.intelligence + user_stats.level);
+        def = u16::from(target_stats.mr + target_stats.spirit + target_stats.level) / 2;
     } else {
-        atk = attack.power + user_stats.wp + user_stats.strength + user_stats.level;
-        def = (target_stats.ac + target_stats.constitution + target_stats.level) / 2;
+        atk = u16::from(attack.power + user_stats.wp + user_stats.strength + user_stats.level);
+        def = u16::from(target_stats.ac + target_stats.constitution + target_stats.level) / 2;
     }
 
     // Establish damage since we'll need it later
-    let mut damage: usize;
+    let mut damage: u16;
 
     // If defence exceeds attack, set attack to 1 to prevent integer overflows and always deal at least 1 damage
     if def >= atk {damage = 1;}
@@ -420,21 +416,21 @@ fn calculate_damage(attack: Attack, user_stats: Stats, target_stats: Stats, targ
     else {damage = atk - def;}
 
     // Damage variance
-    let variance: usize = rand::thread_rng().gen_range(0..40);
+    let variance: u16 = rand::thread_rng().gen_range(0..40);
     println!("{damage} {variance} ");
 
-    damage = ((100 + variance) * damage) / 100;
+    damage = (100 + variance) * damage / 100;
     println!("{damage}");
 
     // Absolute final fallback to ensure that you always deal at least 1 damage
 
     if target_elements.weak.is_some() && target_elements.weak.expect("Invalid weakness element").contains(&attack.element) {
-        println!("{} is super effective against this target!", ELEMENT_NAMES[attack.element]);
+        println!("{} is super effective against this target!", ELEMENT_NAMES[usize::from(attack.element)]);
         damage *= 2;
     }
 
     else if target_elements.resist.is_some() && target_elements.resist.expect("Invalid resistance element").contains(&attack.element) {
-        println!("{} isn't very effective against this target...", ELEMENT_NAMES[attack.element]);
+        println!("{} isn't very effective against this target...", ELEMENT_NAMES[usize::from(attack.element)]);
         damage /= 2;
     }
 
@@ -445,17 +441,37 @@ fn calculate_damage(attack: Attack, user_stats: Stats, target_stats: Stats, targ
 
 // For magic attacks, your intelligence stat is used to caclulate both accuracy and attack power
 
-fn generate_weapon_attack(weapon_type: usize, weapon_accuracy: usize) -> Attack<'static> {
+fn generate_weapon_attack(weapon: Option<Item>) -> Attack<'static> {
     // This automatically generates a flat attack based on your equipped weapon
-    Attack {
-        name: "Weapon Attack",
-        desc: "Attack automatically generated from your equipped weapon",
-        cost: 0,
-        category: MOVE_PHYSICAL,
-        element: weapon_type,
-        power: 1,
-        hit_rate: weapon_accuracy,
-        target: TARGET_FOE
+
+    // Before we start, define the lets 
+
+    if weapon.is_some() {
+        let unwrapped_data: EquipmentData = weapon.unwrap().equipment_data.unwrap();
+
+        Attack {
+            name: "Weapon Attack",
+            desc: "Attack automatically generated from your equipped weapon",
+            cost: 0,
+            category: MOVE_PHYSICAL,
+            element: WEAPON_DAMAGE_TYPES[usize::from(unwrapped_data.equip_type)],
+            power: 1,
+            hit_rate: unwrapped_data.weapon_data.unwrap().hit_rate,
+            target: TARGET_FOE
+        }
+    }
+
+    else {
+        Attack {
+            name: "Punch",
+            desc: "Attack generated from a character with no equipped weapon",
+            cost: 0,
+            category: MOVE_PHYSICAL,
+            element: TYPE_NEUTRAL,
+            power: 1,
+            hit_rate: 90,
+            target: TARGET_FOE
+        }
     }
 }
 

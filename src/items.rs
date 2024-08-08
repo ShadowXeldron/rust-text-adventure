@@ -50,7 +50,7 @@ pub const MATERIAL_CRYSTAL: u8 = 9;
 pub const MATERIAL_CLOTH: u8 = 10;
 pub const MATERIAL_LEATHER: u8 = 11;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct Item<'a> { // In the interest of being tidy and modular I have introduced too many Somes and dots
     // Flavour
     pub name: &'a str,
@@ -62,7 +62,7 @@ pub struct Item<'a> { // In the interest of being tidy and modular I have introd
     pub equipment_data: Option<EquipmentData> // If None, it can't be equipped.
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct EquipmentData {
     // Requirements
     pub slot: u8,
@@ -75,19 +75,20 @@ pub struct EquipmentData {
 }
 
 // Struct defining information about weapon types
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct WeaponData {
-    pub weapon_power: usize,
-    pub spell_mod: usize, // Spellcasting Modifier
-    pub init_mod: usize,
-    pub hit_rate: usize,
-    pub element_override: Option<usize>, // Overrides the element used for the flat attack. If None, bases element on the weapon type
+    pub weapon_power: u8,
+    pub spell_mod: u8, // Spellcasting Modifier
+    pub init_mod: u8,
+    pub hit_rate: u8,
+    pub element_override: Option<u8>, // Overrides the element used for the flat attack. If None, bases element on the weapon type
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct ArmourData {
-    pub ac: usize, // Armour class
-    pub mr: isize, // Magic Resistance
+    pub ac: u8, // Armour class
+    pub mr: u8, // Magic Resistance
+    //pub reverse_mr: bool // Potential cheat to reverse
 }
 
 pub const ITEM_IRON_SWORD: Item = Item {

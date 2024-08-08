@@ -3,21 +3,21 @@ use read_input::shortcut::input;
 
 pub fn generate_character(character_name: &str) -> Hero {
     //println!("Would you like to use a prebuilt character or assign stats yourself (y/n)?");
-    //let characterPrompt: usize = input::<usize>().get();
+    //let characterPrompt: u8 = input::<u8>().get();
 
-    let mut character_strength: usize = 5;
-    let mut character_dexterity: usize = 5;
-    let mut character_constitution: usize = 5;
-    let mut character_intelligence: usize = 5;
-    let mut character_spirit: usize = 5;
+    let mut character_strength: u8 = 5;
+    let mut character_dexterity: u8 = 5;
+    let mut character_constitution: u8 = 5;
+    let mut character_intelligence: u8 = 5;
+    let mut character_spirit: u8 = 5;
 
     // This should ask a question regarding whether or not to use a prebuilt character
 
     if true
     {
-        let mut compare_stat: usize = 0;
+        let mut compare_stat: u8 = 0;
         let mut stat_name: &str = "PLACEHOLDER";
-        let mut bonus_points: usize = 10;
+        let mut bonus_points: u8 = 10;
 
         while bonus_points != 0
         {
@@ -34,11 +34,11 @@ pub fn generate_character(character_name: &str) -> Hero {
             ",
 
             // Due to how line ends work in Rust, I can do this for the sake of readability
-            character_strength, "*".repeat(character_strength),
-            character_dexterity, "*".repeat(character_dexterity),
-            character_constitution, "*".repeat(character_constitution),
-            character_intelligence, "*". repeat(character_intelligence),
-            character_spirit, "*". repeat(character_spirit),
+            character_strength, "*".repeat(character_strength.into()),
+            character_dexterity, "*".repeat(character_dexterity.into()),
+            character_constitution, "*".repeat(character_constitution.into()),
+            character_intelligence, "*". repeat(character_intelligence.into()),
+            character_spirit, "*". repeat(character_spirit.into()),
 
             bonus_points);
         
@@ -90,7 +90,7 @@ pub fn generate_character(character_name: &str) -> Hero {
 
             if input_points < 0 // if you are REMOVING stat points
             {
-                if input_points.abs() > compare_stat.try_into().unwrap() { // Minus numbers are weird
+                if input_points.abs() > compare_stat.into() { // Minus numbers are weird
                     println!("You cannot lower a stat below 1");
                 }
 
@@ -99,7 +99,7 @@ pub fn generate_character(character_name: &str) -> Hero {
                     
                     if input::<String>().get() == "y"
                     {
-                        let points_to_use: usize = input_points.try_into().unwrap();
+                        let points_to_use: u8 = input_points.try_into().unwrap();
                         // Lower the stat and increase bonus points. This blantantly exploits the bizzare quirks of minus numbers.
                         compare_stat += points_to_use;
                         bonus_points -= points_to_use;
@@ -124,13 +124,13 @@ pub fn generate_character(character_name: &str) -> Hero {
                     }
                 }
             }
-            if input_points > bonus_points.try_into().unwrap() // If you try to use more bonus points than you have
+            if input_points > bonus_points.into() // If you try to use more bonus points than you have
             {
                 println!("You do not have that many bonus points!");
             }
 
             else {
-                let points_to_use: usize = input_points.try_into().unwrap();
+                let points_to_use: u8 = input_points.try_into().unwrap();
 
                 if points_to_use == 0 // If you overcharged
                 {
@@ -164,8 +164,8 @@ pub fn generate_character(character_name: &str) -> Hero {
         }
     }
 
-    let character_hp: usize = character_constitution + ((character_strength / 2) + 1);
-    let character_mp: usize = character_intelligence + character_spirit + 1;
+    let character_hp: u16 = u16::from(character_constitution) + ((u16::from(character_strength) / 2) + 1);
+    let character_mp: u16 = u16::from(character_intelligence) + u16::from(character_spirit) + 1;
 
     // Return the hero
     println!("Generated hero!");
@@ -199,7 +199,15 @@ pub fn generate_character(character_name: &str) -> Hero {
         },
 
         exp: 0,
-        movelist: &[]
+        movelist: &[],
+        equipment: Equipment {
+            weapon: None,
+            offhand: None,
+            head: None,
+            armour: None,
+            legs: None,
+            accessory: None,
+        }
 
     }
 

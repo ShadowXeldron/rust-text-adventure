@@ -28,32 +28,34 @@ pub use crate::heroes::chargenseq::*;
 
 // Constants
 // Global level cap for characters
-pub const LEVEL_CAP: usize = 99;
+pub const LEVEL_CAP: u8 = 99;
 
 // Define structs
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct Stats {
-    // Universal character stats
-    pub level: usize, // Affects all stats
-    pub constitution: usize, // Used to calculate base HP and natural damage reduction
-    pub strength: usize, // Used to calculate physical attack power and base HP
-    pub dexterity: usize, // Used to calculate accuracy, evasion and initiative
-    pub intelligence: usize, // Used to calculate magic damage and base MP
-    pub spirit: usize, // Used to calculate magic resistance and base MP
-    pub ac: usize, // Armour Class - used to calculate physical damage reduction
-    pub mr: usize, // Magic Resistance - used to calculate magical damage reduction
-    pub wp: usize, // Weapon Power - used to calculate physical attack damage
-    pub sp: usize, // Spell Power - used to calculate magic attack damage
+    // Universal character stats.
+    pub level: u8, // Affects all stats
+    pub constitution: u8, // Used to calculate base HP and natural damage reduction
+    pub strength: u8, // Used to calculate physical attack power and base HP
+    pub dexterity: u8, // Used to calculate accuracy, evasion and initiative
+    pub intelligence: u8, // Used to calculate magic damage and base MP
+    pub spirit: u8, // Used to calculate magic resistance and base MP
+    pub ac: u8, // Armour Class - used to calculate physical damage reduction
+    pub mr: u8, // Magic Resistance - used to calculate magical damage reduction
+    pub wp: u8, // Weapon Power - used to calculate physical attack damage
+    pub sp: u8, // Spell Power - used to calculate magic attack damage
+    // These can be 8-bit because the level cap is 99. For players, this ammounts dumping 4 out of 5 stats for 20 extra bonus points and assigning all your bonus points to a single stat for a stat of 35. This means that the theoretical stat cap should be 133, which is smaller than . This is all with the assumption that I don't hard cap the player stats to begin with.
+    // As for AC, MR, WP and SP, the damage formula will most likely cause
 }
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct ElementalEffects<'a> {
-    pub weak: Option<&'a [usize]>, // Slice
-    pub resist: Option<&'a [usize]>,
-    pub immune: Option<&'a [usize]>,
-    pub heal: Option<&'a [usize]>,
-    pub reflect: Option<&'a [usize]>,
-    pub avoid: Option<&'a [usize]>, // Will always dodge this element unless it is forced to hit
+    pub weak: Option<&'a [u8]>, // Slice
+    pub resist: Option<&'a [u8]>,
+    pub immune: Option<&'a [u8]>,
+    pub heal: Option<&'a [u8]>,
+    pub reflect: Option<&'a [u8]>,
+    pub avoid: Option<&'a [u8]>, // Will always dodge this element unless it is forced to hit
 }
 
 // Actual code begins here
@@ -150,8 +152,7 @@ fn player_action(zone: Zone, mut player: Hero) { // Hero parameter is temporary 
             _ =>
                 println!("Suddenly, the enemy stopped existing.")
 
-        } // Temporary functionality. If you lose the battle, it's all going to end in tears.
-
+        } // Temporary functionality. There should ideally be a way to mark certain battles as "friendly", wherein characters are KO'd rather than killed and as such will not trigger a game over sequence.
     }
 
     if player.hp != 0 {
@@ -321,7 +322,7 @@ fn get_alignment(align: i8) -> String
     name.to_string()
 }
 
-fn get_title(align: i8, level: usize) -> String
+fn get_title(align: i8, level: u8) -> String
 {
     let title: &str;
 

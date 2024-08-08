@@ -12,17 +12,18 @@ pub struct Hero<'a> {
 
     // Battle Bits
     // TODO: Make it so that you don't have to set this value manually each time
-    pub max_hp: usize,
-    pub hp: usize,
-    pub max_mp: usize,
-    pub mp: usize,
+    pub max_hp: u16,
+    pub hp: u16,
+    pub max_mp: u16,
+    pub mp: u16,
 
     pub stats: Stats,
     pub elements: ElementalEffects<'a>,
+    pub equipment: Equipment<'a>,
     //pub charisma: u8, // Uncomment if deemed necessary
 
     // For the final game, EXP points and experience negotiation should be here.
-    pub exp: usize,
+    pub exp: u16,
     pub movelist: &'a [Attack<'a>]
 
     // Functions are down in the impl
@@ -31,16 +32,19 @@ pub struct Hero<'a> {
 // Impl definition to allow for functions
 impl<'a> Hero<'a> {
     // Adds experience and checks if you can gain a level
-    pub fn gain_exp(&mut self, exp: usize)
+    pub fn gain_exp(&mut self, exp: u16)
     {
+        // Because experience is stored as a u16, convert the level value to one
+        let level: u16 = self.stats.level.into();
+
         if self.stats.level < LEVEL_CAP {
             self.exp += exp;
 
             // A proper level curve should be here
             loop {
-                if self.exp >= (5 * self.stats.level + self.stats.level) {
+                if self.exp >= (5 * level + level) {
                     // Lower experience points by the EXP formula
-                    self.exp -= 5 * self.stats.level + self.stats.level;
+                    self.exp -= 5 * level + level;
                     self.gain_level()
                 }
                 else {break}
@@ -66,11 +70,11 @@ impl<'a> Hero<'a> {
                 ",
 
                 // Due to how line ends work in Rust, I can do this for the sake of readability
-                self.stats.strength, "*".repeat(self.stats.strength),
-                self.stats.dexterity, "*".repeat(self.stats.dexterity),
-                self.stats.constitution, "*".repeat(self.stats.constitution),
-                self.stats.intelligence, "*". repeat(self.stats.intelligence),
-                self.stats.spirit, "*". repeat(self.stats.spirit));
+                self.stats.strength, "*".repeat(usize::from(self.stats.strength)),
+                self.stats.dexterity, "*".repeat(usize::from(self.stats.dexterity)),
+                self.stats.constitution, "*".repeat(usize::from(self.stats.constitution)),
+                self.stats.intelligence, "*". repeat(usize::from(self.stats.intelligence)),
+                self.stats.spirit, "*". repeat(usize::from(self.stats.spirit)));
 
                 let choice: u8 = input().get();
 
@@ -111,12 +115,15 @@ impl<'a> Hero<'a> {
         }
     }
 
-    pub fn get_remaining_exp(&self) -> usize {
-        (5 * self.stats.level + self.stats.level) - self.exp
+    pub fn get_remaining_exp(&self) -> u16 {
+        // Store level as u16 for stats
+        let level: u16 = self.stats.level.into();  
+        (5 * level + level) - self.exp
     }
 }
 
 // Equipment slot system
+#[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct Equipment<'a> {
     pub weapon: Option<Item<'a>>,
     pub offhand: Option<Item<'a>>,
@@ -158,8 +165,8 @@ impl<'a> Equipment<'a> {
         }
     }
 
-    pub fn get_total_ac(&self) -> usize {
-        let mut total_ac: usize = 0;
+    pub fn get_total_ac(&self) -> u8 {
+        let mut total_ac: u8 = 0;
         // This code sucks, I need to get a better way to make it
         if self.weapon.unwrap().equipment_data.unwrap().armour_data.is_some() {total_ac += self.weapon.unwrap().equipment_data.unwrap().armour_data.unwrap().ac}
         if self.offhand.unwrap().equipment_data.unwrap().armour_data.is_some() {total_ac += self.offhand.unwrap().equipment_data.unwrap().armour_data.unwrap().ac}

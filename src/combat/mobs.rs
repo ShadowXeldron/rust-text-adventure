@@ -6,19 +6,17 @@ use crate::*;
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct Mob<'a> {
     // Battle stuff that I need to figure out how to autoassign
-    pub max_hp: usize,
-    pub hp: usize,
-    pub max_mp: usize,
-    pub mp: usize,
+    pub max_hp: u16,
+    pub hp: u16,
+    pub max_mp: u16,
+    pub mp: u16,
 
     pub name: &'a str,
-    pub exp_reward: usize,
+    pub exp_reward: u16,
     pub stats: Stats,
-    pub hp_mod: usize, // Additional HP on top of the standard HP calcualtions
+    pub hp_mod: u16, // Additional HP on top of the standard HP calcualtions
     pub elements: ElementalEffects<'a>,
     pub movelist: &'a [Attack<'a>]
-
-
 }
 
 pub static MOB_PEBBLE: Mob<'_> = Mob {

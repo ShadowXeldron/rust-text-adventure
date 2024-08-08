@@ -6,7 +6,7 @@ pub const ROLL_NORMAL: u8 = 0; // Roll one die
 pub const ROLL_ADVANTAGE: u8 = 1; // Roll two die, accept the higher value
 pub const ROLL_DISADVANTAGE: u8 = 2; // Roll two die, accept the lower value
 
-pub fn do_saving_throw(stat: usize, dc: usize, advantage: u8) -> bool {
+pub fn do_saving_throw(stat: u8, dc: u8, advantage: u8) -> bool {
     // Start by rolling a dice if the encounter rate value is higher than 0
     let mut roll = rand::thread_rng().gen_range(1..20);
     println!("Roll 1d20, outcome is {}", stat);

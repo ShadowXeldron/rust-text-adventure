@@ -4,12 +4,12 @@ use crate::combat::*;
 pub struct Attack<'a> {
     pub name: &'a str, // Brief name used for the attack
     pub desc: &'a str, // Description of the attack
-    pub cost: usize, // MP cost of the attack
-    pub category: usize, // Whether the attack is Physical, Magical or Status.
-    pub element: usize, // Elemental type of the attack, used in damage calculation
-    pub power: usize, // Base power of the attack
-    pub hit_rate: usize, // Value up to 100 that affects how likely the attack is to connect. Numbers higher than 100 will ignore accuracy checks to always hit
-    pub target: usize
+    pub cost: u16, // MP cost of the attack
+    pub category: u8, // Whether the attack is Physical, Magical or Status.
+    pub element: u8, // Elemental type of the attack, used in damage calculation
+    pub power: u8, // Base power of the attack
+    pub hit_rate: u8, // Value up to 100 that affects how likely the attack is to connect. Numbers higher than 100 will ignore accuracy checks to always hit
+    pub target: u8
 }
 
 pub static ATTACK_TACKLE: Attack<'_> = Attack {
@@ -29,7 +29,7 @@ pub static ATTACK_DEVOUR: Attack<'_> = Attack {
     cost: 0,
     category: MOVE_INSTANT_KILL,
     element: TYPE_NEUTRAL,
-    power: 99999,
+    power: 255,
     hit_rate: 101,
     target: TARGET_FOE
 };
