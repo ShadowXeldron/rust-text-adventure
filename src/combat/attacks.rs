@@ -14,12 +14,23 @@ pub struct Attack<'a> {
 
 pub static ATTACK_TACKLE: Attack<'_> = Attack {
     name: "Tackle",
-    desc: "Strikes the target physically for heavy damage",
+    desc: "A weak physical attack.",
     cost: 0,
     category: MOVE_PHYSICAL,
     element: TYPE_NEUTRAL,
     power: 1,
     hit_rate: 70,
+    target: TARGET_FOE
+};
+
+pub static ATTACK_STAB: Attack<'_> = Attack {
+    name: "Stab",
+    desc: "A weak piercing attack",
+    cost: 0,
+    category: MOVE_PHYSICAL,
+    element: TYPE_PIERCE,
+    power: 3,
+    hit_rate: 80,
     target: TARGET_FOE
 };
 

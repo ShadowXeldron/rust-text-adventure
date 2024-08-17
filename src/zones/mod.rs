@@ -117,7 +117,7 @@ pub static CASTLE_1F_THRONE_ROOM_CORRIDOR: Zone = Zone {
         down: None,
     },
 
-    random_encounters: Some(RANDOM_ENCOUNTER_PEBBLE)
+    random_encounters: Some(RANDOM_ENCOUNTER_SAMPLE)
 };
 
 // Corridors

@@ -54,6 +54,41 @@ pub static MOB_PEBBLE: Mob<'_> = Mob {
 
 };
 
+pub static MOB_GOBLIN: Mob<'_> = Mob {
+    name: "Goblin",
+    exp_reward: 5,
+    max_hp: 1,
+    hp: 1,
+    max_mp: 1,
+    mp: 1,
+
+    stats: Stats {
+        level: 2,
+        constitution: 3,
+        strength: 6,
+        dexterity: 9,
+        intelligence: 2,
+        spirit: 1,
+        ac: 0,
+        mr: 0,
+        wp: 1,
+        sp: 0
+    },
+    hp_mod: 0,
+
+    elements: ElementalEffects {
+        weak: Some(&[TYPE_SLASH, TYPE_ICE]),
+        resist: None,
+        immune: None,
+        heal: None, // Some(&[TYPE_SLASH])
+        reflect: None,
+        avoid: None,
+    },
+
+    movelist: &[ATTACK_STAB]
+
+};
+
 pub static MOB_GRUE: Mob<'_> = Mob {
     name: "Grue",
     max_hp: 0xff,
