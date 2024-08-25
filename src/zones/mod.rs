@@ -71,7 +71,7 @@ impl<'a> NPC<'a> {
 // Throne Room
 pub static CASTLE_1F_THRONE_ROOM: Zone = Zone {
     name: "Castle 1F: Throne Room",
-    text: "You stand in the throne room of the royal palace. Upon the throne sits the land's portly ruler, draped in a majestic red cloak and wearing a ruby-encrusted crown of solid gold upon his head.\nA distressed-looking royal guard stands near to the king.He is wearing ornately decorated armour and carries a gleaming sword and shield.\nAt the southern end of the room is a doorway that leads into a hallway that leads to the rest of the castle.",
+    text: "You stand in the throne room of the royal palace. Upon the throne sits the land's portly ruler, draped in a majestic red cloak and wearing a ruby-encrusted crown of solid gold upon his head.\nA distressed-looking royal guard stands near to the king. He is wearing ornately decorated armour and carries a gleaming sword and shield.\nAt the southern end of the room is a doorway that leads into a hallway that leads to the rest of the castle.",
     encounter_rate: 0,
 
     // Behold, maximum dumbness
@@ -267,7 +267,7 @@ pub static CASTLE_1F_NORTHWEST_TOWER: Zone = Zone {
         south: Some(&CASTLE_1F_EAST_CORRIDOR),
         east: Some(&CASTLE_1F_NORTH_CORRIDOR),
         west: None,
-        up: Some(&CASTLE_2F_SOUTHWEST_TOWER),
+        up: Some(&CASTLE_2F_NORTHWEST_TOWER),
         down: None,
     },
 
@@ -402,7 +402,7 @@ pub static CASTLE_GF_NORTHWEST_TOWER: Zone = Zone {
         south: None,
         east: None,
         west: None,
-        up: Some(&CASTLE_2F_NORTHWEST_TOWER),
+        up: Some(&CASTLE_1F_NORTHWEST_TOWER),
         down: None,
     },
 

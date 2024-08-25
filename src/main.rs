@@ -24,6 +24,9 @@ pub mod heroes;
 pub use crate::heroes::*;
 pub use crate::heroes::chargenseq::*;
 
+//pub mod globals;
+//pub use crate::globals::*;
+
 // All areas in the game are defined as Zones
 
 // Constants
@@ -44,8 +47,8 @@ pub struct Stats {
     pub mr: u8, // Magic Resistance - used to calculate magical damage reduction
     pub wp: u8, // Weapon Power - used to calculate physical attack damage
     pub sp: u8, // Spell Power - used to calculate magic attack damage
-    // These can be 8-bit because the level cap is 99. For players, this ammounts dumping 4 out of 5 stats for 20 extra bonus points and assigning all your bonus points to a single stat for a stat of 35. This means that the theoretical stat cap should be 133, which is smaller than . This is all with the assumption that I don't hard cap the player stats to begin with.
-    // As for AC, MR, WP and SP, the damage formula will most likely cause
+    // These can be 8-bit because the level cap is 99. For players, this ammounts dumping 4 out of 5 stats for 20 extra bonus points and assigning all your bonus points to a single stat for a stat of 35. This means that the theoretical stat cap should be 133, which is smaller than the 8-bit integer limit. This is all with the assumption that I don't hard cap the player stats to begin with.
+    // As for AC, MR, WP and SP, the damage formula will most likely cause them to even out.
 }
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
@@ -58,10 +61,39 @@ pub struct ElementalEffects<'a> {
     pub avoid: Option<&'a [u8]>, // Will always dodge this element unless it is forced to hit
 }
 
+// Fake globals implementation so that I don't have to use unsafe
+pub struct GlobalData<'a> {
+    pub coins: u32, // u32 currency value
+    pub players: &'a mut [Hero <'a>],
+    pub alignment: i8,
+}
+
+impl GlobalData<'_> {
+    fn is_party_wiped(&self) -> bool // Returns true if every player is dead. Otherwise, returns false.
+    {
+        // fallback
+        if self.players.len() == 0 {return false}
+
+        for counter in 0..self.players.len() {
+            if self.players[counter].hp != 0 {return false} // Returns false if someone in the party is fine
+        }
+        
+        return true // Otherwise, returns true and triggers a game over state.
+    }
+
+    fn give_party_exp(&mut self, exp: u16)
+    {
+        // Currently undecided on whether party members who are dead or otherwise considered "out"
+        for counter in 0..self.players.len() {
+            self.players[counter].gain_exp(exp)
+        }
+    }
+}
+
 // Actual code begins here
 fn main() {
     //let player.title: String = "Newbie".to_string();
-    let player_alignment: i8 = 0;
+    
 
     //clear();
     println!("Really basic Rust (was python) text adventure");
@@ -72,14 +104,15 @@ fn main() {
     let binding = input::<String>().get();
     let player_name: &str = binding.as_str();
     let player = generate_character(player_name); // Temporary immutability while I test combat mechanics
+    let global: GlobalData = GlobalData { coins: 0, players: &mut [player], alignment: 0 };
 
     // New game startup sequence;
 
     clear().expect("failed to clear screen");
     println!("{}, be ready to die miserably", player.name);
 
-    show_stat_row(player, get_title(player_alignment, player.stats.level));
-    player_action(CASTLE_1F_THRONE_ROOM, player);
+    show_stat_row(&global, get_title(global.alignment, player.stats.level));
+    player_action(CASTLE_1F_THRONE_ROOM, global);
 
     //exit(0) // Close the program peacefully when the game ends.
 }
@@ -87,7 +120,7 @@ fn main() {
 // Functions and whatnot. I already miss Python.
 
 // This code is probably bad... yet part of me thinks this is the right way to do it?
-fn show_stat_row(player: Hero, title: String) {
+fn show_stat_row(global: &GlobalData, title: String) {
     println!(
         "
         {} the {title}
@@ -95,7 +128,7 @@ fn show_stat_row(player: Hero, title: String) {
     HP: {}/{}     MP: {}/{}    Status: Normal
     Area: Castle 1F: Throne Room
         "
-    , player.name, player.stats.level, player.exp, (5 * player.stats.level + player.stats.level), player.get_remaining_exp(), player.hp, player.max_hp, player.mp, player.max_mp);
+    , global.players[0].name, global.players[0].stats.level, global.players[0].exp, (5 * global.players[0].stats.level + global.players[0].stats.level), global.players[0].get_remaining_exp(), global.players[0].hp, global.players[0].max_hp, global.players[0].mp, global.players[0].max_mp);
 
 }
 
@@ -112,9 +145,9 @@ fn show_stat_row(player: Hero, title: String) {
 
 // Text parser. This might also be better off in its own file.
 // Also, it's constantly calling itself which I don't think is particularly good code.
-fn player_action(zone: Zone, mut player: Hero) { // Hero parameter is temporary until I can figure out how to implement globals
+fn player_action(zone: Zone, mut global: GlobalData) { // Hero parameter is temporary until I can figure out how to implement globals
     // Terminate the game if you have run out of health
-    if player.hp == 0 {
+    if global.is_party_wiped() {
         println!("\n \x1b[31;1;4mGAME OVER!\x1b[0m \n");
         return
     }
@@ -128,17 +161,19 @@ fn player_action(zone: Zone, mut player: Hero) { // Hero parameter is temporary 
         let encounters: &[NPC] = zone.random_encounters.unwrap();
         let foe: NPC = encounters[rand::thread_rng().gen_range(0..encounters.len())]; // Pick a random encounter from a table and throw an exception if the area doesn't have an encounter table
         println!("{}", foe.dialogue);
-        match battle_start(&mut [player], &mut [MOB_PEBBLE]) {
+
+        match battle_start(&mut global.players, &mut [MOB_PEBBLE]) {
             BATTLE_RESULT_VICTORY => {// Successful enemy kills
-                println!("You stand victorious over your assailant. \nThe party gained {} experience points from the battle!", MOB_PEBBLE.exp_reward);
-                player.gain_exp(foe.get_exp_from_encounters())
+                println!("You stand victorious over your assailant. \nThe party gained {} experience points from the battle!\n", MOB_PEBBLE.exp_reward);
+                global.give_party_exp(foe.get_exp_from_encounters())
             },
 
             BATTLE_RESULT_FAILURE => {
                 println!("You have perished upon the field of battle...");
-                player.hp = 0;
+                //player.hp = 0;
                 // Print "Game Over with ANSI codes"
-                println!("\n \x1b[31;1;4mGAME OVER!\x1b[0m \n")
+                println!("\n \x1b[31;1;4mGAME OVER!\x1b[0m \n");
+                return;
             },
 
             BATTLE_RESULT_ESCAPE =>
@@ -153,9 +188,10 @@ fn player_action(zone: Zone, mut player: Hero) { // Hero parameter is temporary 
                 println!("Suddenly, the enemy stopped existing.")
 
         } // Temporary functionality. There should ideally be a way to mark certain battles as "friendly", wherein characters are KO'd rather than killed and as such will not trigger a game over sequence.
+        println!("");
     }
 
-    if player.hp != 0 {
+    if !global.is_party_wiped() {
             loop {
             print!("What do you want to do? \n > ");
             let action: String = input::<String>().get().to_lowercase(); // This is so it can be case insensitive
@@ -166,7 +202,7 @@ fn player_action(zone: Zone, mut player: Hero) { // Hero parameter is temporary 
             let verb: &str = vec[0];
             let noun: &str = if vec.len() == 1 {""} else {vec[1]};
 
-            //print!("{} {}", verb, noun);
+            println!("");
 
             match verb {
                 "go" | "move" =>
@@ -178,42 +214,42 @@ fn player_action(zone: Zone, mut player: Hero) { // Hero parameter is temporary 
                             "up" =>
                                 if zone.directions.up.is_some() {
                                     // Due to how Rust works, we need to dereference the option with an asterisk and also run the "unwrap" function on the option.
-                                    player_action(*zone.directions.up.unwrap(), player);
+                                    player_action(*zone.directions.up.unwrap(), global);
                                     break
                                 }
                                 else {println!("There is nothing above you.")},
 
                             "down" =>
                                 if zone.directions.down.is_some() {
-                                    player_action(*zone.directions.down.unwrap(), player);
+                                    player_action(*zone.directions.down.unwrap(), global);
                                     break
                                 }
                                 else {println!("There is nothing below you.")},
 
                             "north" =>
                                 if zone.directions.north.is_some() {
-                                    player_action(*zone.directions.north.unwrap(), player);
+                                    player_action(*zone.directions.north.unwrap(), global);
                                     break
                                 }
                                 else {println!("There is nothing to your north.")},
 
                             "south" =>
                                 if zone.directions.south.is_some() {
-                                    player_action(*zone.directions.south.unwrap(), player);
+                                    player_action(*zone.directions.south.unwrap(), global);
                                     break
                                 }
                                 else {println!("There is nothing to your south.")},
 
                             "east" =>
                                 if zone.directions.east.is_some() {
-                                    player_action(*zone.directions.east.unwrap(), player);
+                                    player_action(*zone.directions.east.unwrap(), global);
                                     break
                                 }
                                 else {println!("There is nothing to your east.")},
 
                             "west" =>
                                 if zone.directions.west.is_some() {
-                                    player_action(*zone.directions.west.unwrap(), player);
+                                    player_action(*zone.directions.west.unwrap(), global);
                                     break
                                 }
                                 else {println!("There is nothing to your west.")},
@@ -228,7 +264,7 @@ fn player_action(zone: Zone, mut player: Hero) { // Hero parameter is temporary 
                     else {println!("You can't go {noun}")}
 
                 "info" => {
-                    show_stat_row(player, get_title(0, player.stats.level));
+                    show_stat_row(&global, get_title(0, global.players[0].stats.level));
                     println!("You are {}", get_alignment(0))},
 
                 "take" | "get" =>
@@ -259,12 +295,14 @@ fn player_action(zone: Zone, mut player: Hero) { // Hero parameter is temporary 
                 "clear" => clear().expect("Couldn't clear screen"),
 
                 "help" => println!("
-                List of commands:
+List of commands:
 
-                go - Move to a connected area. You can go Up, Down, North, East, South or West
+    go - Move to a connected area. You can go Up, Down, North, East, South or West
+    talk - Chat with an NPC
+    take - Add an item to your inventory
 
-                info - Print information about the party
-                help - Shows this text
+    info - Print information about the party
+    help - Shows this text
                 "),
 
                 _ => println!("Unknown Command! Type \"help\" for more information.")

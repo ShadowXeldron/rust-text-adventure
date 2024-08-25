@@ -6,12 +6,11 @@ use crate::dicerolls::*;
 
 // Load externals
 use std::cmp::Reverse;
-
 use read_input::shortcut::input;
 
 // These are probably redundant but I've included them to make modification easier.
 
-pub const BATTLE_RESULT_VICTORY: u8 = 0; //
+pub const BATTLE_RESULT_VICTORY: u8 = 0; // Battle victory on account of every character being defeated
 pub const BATTLE_RESULT_FAILURE: u8 = 1; // Total party kill. This is considered a fail state.
 pub const BATTLE_RESULT_ESCAPE: u8 = 2; // Battle canceled by player escaping
 pub const BATTLE_RESULT_TRUCE: u8 = 3; // Peaceful resolution from negotiation
