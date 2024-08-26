@@ -72,13 +72,13 @@ impl GlobalData<'_> {
     fn is_party_wiped(&self) -> bool // Returns true if every player is dead. Otherwise, returns false.
     {
         // fallback
-        if self.players.len() == 0 {return false}
+        if self.players.is_empty() {return false}
 
         for counter in 0..self.players.len() {
             if self.players[counter].hp != 0 {return false} // Returns false if someone in the party is fine
         }
         
-        return true // Otherwise, returns true and triggers a game over state.
+        true // Otherwise, returns true and triggers a game over state.
     }
 
     fn give_party_exp(&mut self, exp: u16)
@@ -162,7 +162,7 @@ fn player_action(zone: Zone, mut global: GlobalData) { // Hero parameter is temp
         let foe: NPC = encounters[rand::thread_rng().gen_range(0..encounters.len())]; // Pick a random encounter from a table and throw an exception if the area doesn't have an encounter table
         println!("{}", foe.dialogue);
 
-        match battle_start(&mut global.players, &mut [MOB_PEBBLE]) {
+        match battle_start(global.players, &mut [MOB_PEBBLE]) {
             BATTLE_RESULT_VICTORY => {// Successful enemy kills
                 println!("You stand victorious over your assailant. \nThe party gained {} experience points from the battle!\n", MOB_PEBBLE.exp_reward);
                 global.give_party_exp(foe.get_exp_from_encounters())
@@ -188,7 +188,7 @@ fn player_action(zone: Zone, mut global: GlobalData) { // Hero parameter is temp
                 println!("Suddenly, the enemy stopped existing.")
 
         } // Temporary functionality. There should ideally be a way to mark certain battles as "friendly", wherein characters are KO'd rather than killed and as such will not trigger a game over sequence.
-        println!("");
+        println!();
     }
 
     if !global.is_party_wiped() {
@@ -202,7 +202,7 @@ fn player_action(zone: Zone, mut global: GlobalData) { // Hero parameter is temp
             let verb: &str = vec[0];
             let noun: &str = if vec.len() == 1 {""} else {vec[1]};
 
-            println!("");
+            println!();
 
             match verb {
                 "go" | "move" =>
