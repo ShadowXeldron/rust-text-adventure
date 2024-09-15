@@ -73,7 +73,7 @@ static ELEMENT_NAMES: &[&str] = &["Neutral", "Slash", "Pierce", "Impact", "Fire"
     3. Battle resolved peacefully by negotiation
 */
 
-pub fn battle_start(players: &mut [Hero], baddies: &mut [Mob] /*slice filled with encounter data*/ ) -> u8 {
+pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled with encounter data*/ ) -> u8 {
     const DMG_HURT: u8 = 1;
     const DMG_REPEL: u8 = 2;
     const DMG_ABSORB: u8 = 3;

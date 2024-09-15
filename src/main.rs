@@ -162,7 +162,7 @@ fn player_action(zone: Zone, mut global: GlobalData) { // Hero parameter is temp
         let foe: NPC = encounters[rand::thread_rng().gen_range(0..encounters.len())]; // Pick a random encounter from a table and throw an exception if the area doesn't have an encounter table
         println!("{}", foe.dialogue);
 
-        match battle_start(global.players, &mut [MOB_PEBBLE]) {
+        match battle_start(global.players, foe.fight_table.unwrap().to_vec()) {
             BATTLE_RESULT_VICTORY => {// Successful enemy kills
                 println!("You stand victorious over your assailant. \nThe party gained {} experience points from the battle!\n", MOB_PEBBLE.exp_reward);
                 global.give_party_exp(foe.get_exp_from_encounters())
