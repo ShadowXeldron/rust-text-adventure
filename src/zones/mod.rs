@@ -61,19 +61,6 @@ impl<'a> NPC<'a> {
 
         exp_drop
     }
-    
-    pub fn get_mut_fighttable(&mut self) -> &mut [Mob<'a>]
-    {
-        let mob_mut: &mut [Mob<'a>] = &mut [];
-        let unmut_mob: &[Mob<'a>] = self.fight_table.unwrap().into_iter().as_slice();
-
-        for counter in 0..unmut_mob.len() {
-            mob_mut[counter] = unmut_mob[counter].clone()
-        }
-
-        return mob_mut
-       
-    }
 }
 
 // The Castle
