@@ -58,11 +58,15 @@ const WEAPON_WAND: u8 = 12;
 const WEAPON_KNIFE: u8 = 13;*/
 
 // Array for checking weapon damage types, although for autogen knives will do slash or pierce damage depending on what's more effective
-static WEAPON_DAMAGE_TYPES: [u8; 13] = [TYPE_NEUTRAL /* Barehand */, TYPE_SLASH /* Sword */, TYPE_SLASH /* Greatsword */, TYPE_SLASH /* Axe */, TYPE_SLASH /* Greataxe */, TYPE_PIERCE /* Spear */, TYPE_PIERCE /* Polearm */, TYPE_PIERCE /* Bow */, TYPE_IMPACT /* Club */, TYPE_IMPACT /* Hammer */, TYPE_IMPACT /* Staff */, TYPE_NEUTRAL /* Wand */, TYPE_PIERCE /* Knife */];
+const WEAPON_DAMAGE_TYPES: [u8; 13] = [TYPE_NEUTRAL /* Barehand */, TYPE_SLASH /* Sword */, TYPE_SLASH /* Greatsword */, TYPE_SLASH /* Axe */, TYPE_SLASH /* Greataxe */, TYPE_PIERCE /* Spear */, TYPE_PIERCE /* Polearm */, TYPE_PIERCE /* Bow */, TYPE_IMPACT /* Club */, TYPE_IMPACT /* Hammer */, TYPE_IMPACT /* Staff */, TYPE_NEUTRAL /* Wand */, TYPE_PIERCE /* Knife */];
 
 // Constant array of string names for the elements
-static ELEMENT_NAMES: &[&str] = &["Neutral", "Slash", "Pierce", "Impact", "Fire", "Ice", "Electric", "Wind", "Ground", "Dark", "Light"];
+const ELEMENT_NAMES: &[&str] = &["Neutral", "Slash", "Pierce", "Impact", "Fire", "Ice", "Electric", "Wind", "Ground", "Dark", "Light"];
 
+pub struct BattleResult<'a> {
+    pub result_type: u8,
+    pub party: &'a mut [Hero <'a>]
+}
 
 // Add targeting stuff
 
@@ -73,7 +77,7 @@ static ELEMENT_NAMES: &[&str] = &["Neutral", "Slash", "Pierce", "Impact", "Fire"
     3. Battle resolved peacefully by negotiation
 */
 
-pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled with encounter data*/ ) -> u8 {
+pub fn battle_start<'a> (players: &'a mut [Hero<'a>], mut baddies: Vec<Mob> /*slice filled with encounter data*/ ) -> BattleResult<'a> {
     const DMG_HURT: u8 = 1;
     const DMG_REPEL: u8 = 2;
     const DMG_ABSORB: u8 = 3;
@@ -81,18 +85,18 @@ pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled w
     let mut damage: u16;
 
     // Establish baseline point values for each character
-    for counter in 0..players.len() {
-        players[counter].max_hp = u16::from((players[counter].stats.constitution * players[counter].stats.level) + ((players[counter].stats.strength / 2) + players[counter].stats.level) + 10);
-        players[counter].hp = players[counter].max_hp;
-        players[counter].max_mp = u16::from((players[counter].stats.intelligence * players[counter].stats.level) + players[counter].stats.spirit + players[counter].stats.level);
-        players[counter].mp = players[counter].max_mp;
+    for counter in &mut *players {
+        counter.max_hp = u16::from((counter.stats.constitution * counter.stats.level) + ((counter.stats.strength / 2) + counter.stats.level) + 10);
+        counter.hp = counter.max_hp;
+        counter.max_mp = u16::from((counter.stats.intelligence * counter.stats.level) + counter.stats.spirit + counter.stats.level);
+        counter.mp = counter.max_mp;
     }
 
-    for counter in 0..baddies.len() {
-        baddies[counter].max_hp = u16::from((baddies[counter].stats.constitution * baddies[counter].stats.level) + ((baddies[counter].stats.strength / 2) + baddies[counter].stats.level));
-        baddies[counter].hp = baddies[counter].max_hp;
-        baddies[counter].max_mp = u16::from((baddies[counter].stats.intelligence * baddies[counter].stats.level) + baddies[counter].stats.spirit + baddies[counter].stats.level);
-        baddies[counter].mp = baddies[counter].max_mp;
+    for counter in &mut *baddies {
+        counter.max_hp = u16::from((counter.stats.constitution * counter.stats.level) + ((counter.stats.strength / 2) + counter.stats.level));
+        counter.hp = counter.max_hp;
+        counter.max_mp = u16::from((counter.stats.intelligence * counter.stats.level) + counter.stats.spirit + counter.stats.level);
+        counter.mp = counter.max_mp;
     }
 
     let mut dmg_mode: u8; // Used for deciding whether damage is dealt nomrmally, reflected or absorbed
@@ -101,8 +105,6 @@ pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled w
     let mut enable_player_commands: bool;
 
     // Roll for initiative
-
-    println!("{} draws near. Go forth, {}!", baddies[0].name, players[0].name);
 
     let mut turn_count: usize = 1; // Increment at the start of each turn
 
@@ -113,11 +115,6 @@ pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled w
         // We use an SMT3 styled system where it goes player phase -> enemy phase since it's easier to implement
         players.sort_by_key(|item| Reverse(item.stats.dexterity + item.stats.level));
         baddies.sort_by_key(|item| Reverse(item.stats.dexterity + item.stats.level));
-
-        //players[0].init = players[0].stats.dexterity + players[0].stats.level;
-        //baddies[0].init = baddies[0].stats.dexterity + baddies[0].stats.level;
-        //println!("Player initiative: {}\nMob initiative: {}", players[0].init, baddies[0].init);
-
 
         // preturn command loop
 
@@ -136,7 +133,10 @@ pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled w
                     println!("You started trying to talk to the enemy.");
                     if start_negotiation(players[0], baddies[0]) {
                         println!("Negotiation was successful!");
-                        return BATTLE_RESULT_TRUCE
+                        return BattleResult {
+                            result_type: BATTLE_RESULT_TRUCE,
+                            party: players
+                        };
                     } else {
                         println!("Negotiation failed!");
                         break
@@ -148,7 +148,10 @@ pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled w
 
                         if do_saving_throw(players[0].stats.dexterity, 20, ROLL_DISADVANTAGE) {
                             println!("...and did!");
-                            return BATTLE_RESULT_ESCAPE
+                            return BattleResult {
+                                result_type: BATTLE_RESULT_ESCAPE,
+                                party: players
+                            }
                         } else {
                             println!("...but they couldn't escape in time!")
                         }
@@ -169,12 +172,12 @@ pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled w
         if enable_player_commands {
             for counter in 0..players.len() {
                 // Before starting, make sure the enemy has not been KO'd. We only need to check for enemy HP because it's the player's turn
-                if baddies[0].hp == 0 {break}
+                if is_enemy_side_beaten(&baddies) {break}
 
                 // Otherwise have the player select a command
                 loop {
-                    println!("HP: {} / {}", players[counter].hp, players[counter].max_hp);
-                    println!("MP: {} / {}", players[counter].mp, players[counter].max_mp);
+                    println!("{}'s HP: {} / {}", players[counter].name, players[counter].hp, players[counter].max_hp);
+                    println!("{}'s MP: {} / {}", players[counter].name, players[counter].mp, players[counter].max_mp);
 
                     println!("{}", baddies[0].name);
                     println!("Enemy HP: {} / {}", baddies[0].hp, baddies[0].max_hp);
@@ -189,8 +192,6 @@ pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled w
                         1 => {
                             // Physical attack
                             println!("{} attacks", players[counter].name);
-
-                            // Aw crud we're back to the drawing board
                             attack = generate_weapon_attack(players[counter].equipment.weapon);
                             break
                         }
@@ -235,15 +236,13 @@ pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled w
                 }
 
                 // Now use the attack
-                let target: usize;
-
-                if baddies.is_empty() {target = 0}
-                else {target = 0} // This should prompt the player to choose an enemy
+                // Cloning is bad for performance so I'm not particularly happy about doing this. This should ideally be changed to avoid cloning if possible but it's fine for now since it's not like a single-thread text adventure is going to need too much memory anyway.
+                let target: usize = if baddies.clone().len() < 2 {0} else {get_target(baddies.clone())}; // This should prompt the player to choose an enemy, but right now only the enemy in target slot 0 is counted. If there are no enemies, force 0 to prevent issues
 
                 // Perform elemental checks
-                if baddies[target].elements.heal.is_some() && baddies[0].elements.heal.expect("Invalid target element").contains(&attack.element) {dmg_mode = DMG_ABSORB;}
+                if baddies[target].elements.heal.is_some() && baddies[target].elements.heal.expect("Invalid target element").contains(&attack.element) {dmg_mode = DMG_ABSORB;}
 
-                else if baddies[target].elements.reflect.is_some() && baddies[0].elements.reflect.expect("Invalid target element").contains(&attack.element) {dmg_mode = DMG_REPEL;}
+                else if baddies[target].elements.reflect.is_some() && baddies[target].elements.reflect.expect("Invalid target element").contains(&attack.element) {dmg_mode = DMG_REPEL;}
 
                 else {dmg_mode = DMG_HURT;}
 
@@ -254,10 +253,10 @@ pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled w
                         attack.hit_rate = 101;
 
                         println!("But the target absorbs {}!", ELEMENT_NAMES[usize::from(attack.element)]); // This was done because I really don't need usize for element descriptors
-                        damage = calculate_damage(attack, players[0].stats, baddies[0].stats, baddies[0].elements) / 2;
-                        println!("{} recovered {} HP!", baddies[0].name, damage);
-                        baddies[0].hp += damage;
-                        if baddies[0].hp > baddies[0].max_hp {baddies[0].hp = baddies[0].max_hp}
+                        damage = calculate_damage(attack, players[0].stats, baddies[target].stats, baddies[target].elements) / 2;
+                        println!("{} recovered {} HP!", baddies[target].name, damage);
+                        baddies[target].hp += damage;
+                        if baddies[target].hp > baddies[target].max_hp {baddies[target].hp = baddies[target].max_hp}
                     }
 
                     DMG_REPEL => {
@@ -265,23 +264,25 @@ pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled w
                         attack.hit_rate = 101;
 
                         println!("But the target reflects {}!", ELEMENT_NAMES[usize::from(attack.element)]);
-                        damage = calculate_damage(attack, players[0].stats, players[0].stats, baddies[0].elements);
+                        damage = calculate_damage(attack, players[0].stats, players[0].stats, baddies[target].elements);
 
-                        println!("You took {damage} damage!");
+                        println!("{} took {damage} damage!", players[0].name);
                         if damage > players[0].hp {players[0].hp = 0;}
-                        else {baddies[0].hp -= damage;}
+                        else {baddies[target].hp -= damage;}
                     }
 
                     _ => {
-                        damage = calculate_damage(attack, players[0].stats, baddies[0].stats, baddies[0].elements);
+                        damage = calculate_damage(attack, players[0].stats, baddies[target].stats, baddies[target].elements);
 
 
                         if damage > 0 {
-                            println!("The attack did {} damage to the {}.", damage, baddies[0].name);
+                            println!("The attack did {} damage to the {}.", damage, baddies[target].name);
 
                             // To prevent underflowing when your damage output exceeds the enemy's HP
-                            if damage > baddies[0].hp {baddies[0].hp = 0;}
-                            else {baddies[0].hp -= damage;}
+                            if damage > baddies[target].hp {baddies[target].hp = 0;}
+                            else {baddies[target].hp -= damage;}
+
+                            if baddies[target].hp == 0 {println!("{} was vaniqushed!", baddies[target].name)};
                         }
                     }
                 }
@@ -289,45 +290,47 @@ pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled w
             }
         }
 
+        println!("\nEnemy Turn\n");
+        for counter in &mut baddies {
 
-        if baddies[0].hp > 0 && players[0].hp > 0 {
-            println!("\nEnemy Turn\n");
+            let target = &mut players[rand::thread_rng().gen_range(0..players.len())];
+
+            if counter.hp > 0 && target.hp > 0 {
 
             // Used for iterating
             //let mut enemy_moved = false;
 
             // Needs handling for if an enemy has no 0 MP attacks
             loop {
-                attack = baddies[0].movelist[rand::thread_rng().gen_range(0..baddies[0].movelist.len())];
+                attack = counter.movelist[rand::thread_rng().gen_range(0..counter.movelist.len())];
 
-                if baddies[0].mp >= attack.cost {
+                if counter.mp >= attack.cost {
                     break;
                 }
 
             }
 
             println!("The enemy used {}!", attack.name);
-            baddies[0].mp -= attack.cost;
+            counter.mp -= attack.cost;
 
             match attack.target
             {
                 TARGET_FOE => {
 
-                    damage = calculate_damage(attack, baddies[0].stats, players[0].stats, baddies[0].elements);
+                    damage = calculate_damage(attack, counter.stats, target.stats, counter.elements);
                     if damage > 0 {println!("You took {damage} damage!");
                         // To prevent underflowing when your damage output exceeds the player's HP
-                        if damage > players[0].hp {players[0].hp = 0;}
-                        else {players[0].hp -= damage;}
+                        if damage > target.hp {target.hp = 0;}
+                        else {target.hp -= damage;}
                     }
-
                 }
 
                 TARGET_SELF => {
                     if attack.power > 0 {
-                        damage = u16::from(baddies[0].stats.spirit + baddies[0].stats.level + attack.power);
-                        baddies[0].hp += damage;
-                        if baddies[0].hp > baddies[0].max_hp {baddies[0].hp = baddies[0].max_hp}
-                        println!("{} restored {} HP", baddies[0].name, damage)
+                        damage = u16::from(counter.stats.spirit + counter.stats.level + attack.power);
+                        counter.hp += damage;
+                        if counter.hp > counter.max_hp {counter.hp = counter.max_hp}
+                        println!("{} restored {} HP", counter.name, damage)
                     }
                 }
 
@@ -336,16 +339,25 @@ pub fn battle_start(players: &mut [Hero], mut baddies: Vec<Mob> /*slice filled w
 
                 }
             }
+
+            if target.hp == 0 {println!("{} fell unconcious...", target.name)};
         }
+    }
         // If it all ends miserably, end the fight
-        if baddies[0].hp == 0 || players[0].hp == 0 {break}
+        if is_enemy_side_beaten(&baddies) || is_player_side_beaten(players) {break}
     }
 
     // If the loop breaks, check for hit points. If the enemy team was annihlated, return 0 to signal a victory. But if the player team was defeated, return 1 to signal a loss.
-    if baddies[0].hp == 0 {BATTLE_RESULT_VICTORY}
-    else {BATTLE_RESULT_FAILURE}
-}
+    let mut result: BattleResult = BattleResult {
+        result_type: BATTLE_RESULT_VICTORY,
+        party: players
+    }; 
 
+    if is_enemy_side_beaten(&baddies) {result.result_type = BATTLE_RESULT_VICTORY}
+    else {result.result_type = BATTLE_RESULT_FAILURE}
+
+    result
+}
 
 fn show_attack_info(attack: Attack) {
     println!("\n{}", attack.name);
@@ -563,6 +575,33 @@ fn start_negotiation(hero: Hero, mob: Mob) -> bool {
     }
 
     false
+}
+
+// Used for finding out what target to hit
+fn get_target(baddies: Vec<Mob>) -> usize {
+    let mobcount = baddies.len();
+    println!("Choose target:");
+    for counter in baddies {
+        println!("{} - {} / {} HP", counter.name, counter.hp, counter.max_hp)
+    }
+    loop {
+        let choice: usize = input::<usize>().get();
+        if choice > mobcount || choice == 0 {println!("Invalid target! Pick a number from 1 to {}", mobcount)} else {return choice - 1;}
+    }
+}
+
+fn is_enemy_side_beaten(baddies: &Vec<Mob>) -> bool {
+    for counter in baddies{
+        if counter.hp != 0 {return false}
+    }
+    true
+}
+
+fn is_player_side_beaten(players: &[Hero<'_>]) -> bool {
+    for counter in players {
+        if counter.hp != 0 {return false}
+    }
+    true
 }
 
 /*

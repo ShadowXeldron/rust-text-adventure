@@ -19,7 +19,7 @@ pub struct Mob<'a> {
     pub movelist: &'a [Attack<'a>]
 }
 
-pub static MOB_PEBBLE: Mob<'_> = Mob {
+pub const MOB_PEBBLE: Mob<'_> = Mob {
     name: "Pebble",
     exp_reward: 3,
     max_hp: 1,
@@ -54,7 +54,7 @@ pub static MOB_PEBBLE: Mob<'_> = Mob {
 
 };
 
-pub static MOB_GOBLIN: Mob<'_> = Mob {
+pub const MOB_GOBLIN: Mob<'_> = Mob {
     name: "Goblin",
     exp_reward: 5,
     max_hp: 1,
@@ -89,7 +89,7 @@ pub static MOB_GOBLIN: Mob<'_> = Mob {
 
 };
 
-pub static MOB_GRUE: Mob<'_> = Mob {
+pub const MOB_GRUE: Mob<'_> = Mob {
     name: "Grue",
     max_hp: 0xff,
     hp: 0xff,

@@ -5,7 +5,7 @@ use crate::combat::mobs::*;
 
 // Basic enemy tables
 
-/*pub static RANDOM_ENCOUNTER_SAMPLE: &[NPC] = &[
+/*pub const RANDOM_ENCOUNTER_SAMPLE: &[NPC] = &[
     NPC {
         name: "pebble", // Not really needed for these but still
         dialogue: "Suddenly, an aggressive rock with googly eyes shows up and attacks you!",
@@ -20,7 +20,8 @@ use crate::combat::mobs::*;
 ];*/
     
 
-pub static ENCTABLE_SINGLE_PEBBLE: &[Mob] = &[MOB_PEBBLE];
-pub static ENCTABLE_SINGLE_GOBLIN: &[Mob] = &[MOB_GOBLIN];
-//pub static ENCTABLE_TRIPLE_PEBBLE: &[Mob] = &[MOB_PEBBLE, MOB_PEBBLE, MOB_PEBBLE];
-//pub static ENCTABLE_GRUE: &[Mob] = &[MOB_GRUE];
+pub const ENCTABLE_SINGLE_PEBBLE: &[Mob] = &[MOB_PEBBLE];
+pub const ENCTABLE_SINGLE_GOBLIN: &[Mob] = &[MOB_GOBLIN];
+pub const ENCTABLE_GOBLIN_GANG: &[Mob] = &[MOB_GOBLIN, MOB_PEBBLE, MOB_GOBLIN];
+pub const ENCTABLE_TRIPLE_PEBBLE: &[Mob] = &[MOB_PEBBLE, MOB_PEBBLE, MOB_PEBBLE];
+//pub const ENCTABLE_GRUE: &[Mob] = &[MOB_GRUE];

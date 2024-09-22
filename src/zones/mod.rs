@@ -1,3 +1,6 @@
+// Zone file
+// Due to necessary recursive borrowing, the zones need to be static which means they'll be floating around in memory throughout the program's runtime. I don't like that.
+
 use crate::Mob;
 mod encounters; use crate::zones::encounters::*;
 
@@ -16,7 +19,7 @@ pub struct Zone<'a> {
 impl Zone<'_> {
     pub fn talk_npc(&self, npc: &str) {
         // Iterate through NPC array
-        let npc_list = self.npcs.expect("NPC list empty!");
+        let npc_list: &[NPC<'_>] = self.npcs.expect("NPC list empty!");
 
         for counter in npc_list {
             if counter.name == npc {
@@ -127,7 +130,20 @@ pub static CASTLE_1F_THRONE_ROOM_CORRIDOR: Zone = Zone {
             name: "goblin", // Not really needed for these but still
             dialogue: "A goblin sneaks up and attacks you!",
             fight_table: Some(ENCTABLE_SINGLE_GOBLIN)
-        }]
+        },
+
+        NPC {
+            name: "goblins", // Not really needed for these but still
+            dialogue: "You were ganged up on by some goblins and a rock",
+            fight_table: Some(ENCTABLE_GOBLIN_GANG)
+        },
+        
+        NPC {
+            name: "pebbles", // Not really needed for these but still
+            dialogue: "A herd of aggressive pebbles approached rapidly!",
+            fight_table: Some(ENCTABLE_TRIPLE_PEBBLE)
+        }
+        ]
     )
 };
 

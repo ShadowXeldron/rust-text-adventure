@@ -12,7 +12,7 @@ pub struct Attack<'a> {
     pub target: u8
 }
 
-pub static ATTACK_TACKLE: Attack<'_> = Attack {
+pub const ATTACK_TACKLE: Attack<'_> = Attack {
     name: "Tackle",
     desc: "A weak physical attack.",
     cost: 0,
@@ -23,7 +23,7 @@ pub static ATTACK_TACKLE: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_STAB: Attack<'_> = Attack {
+pub const ATTACK_STAB: Attack<'_> = Attack {
     name: "Stab",
     desc: "A weak piercing attack",
     cost: 0,
@@ -34,7 +34,7 @@ pub static ATTACK_STAB: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_DEVOUR: Attack<'_> = Attack {
+pub const ATTACK_DEVOUR: Attack<'_> = Attack {
     name: "Devour",
     desc: "Gobbles up the target in one hit",
     cost: 0,
@@ -45,7 +45,7 @@ pub static ATTACK_DEVOUR: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_SUPER_PUNCH: Attack<'_> = Attack {
+pub const ATTACK_SUPER_PUNCH: Attack<'_> = Attack {
     name: "Super Punch",
     desc: "Strikes the target physically for heavy damage",
     cost: 5,
@@ -56,7 +56,7 @@ pub static ATTACK_SUPER_PUNCH: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_HEAVY_SLASH: Attack<'_> = Attack {
+pub const ATTACK_HEAVY_SLASH: Attack<'_> = Attack {
     name: "Heavy Slash",
     desc: "A powerful sword technique",
     cost: 5,
@@ -67,7 +67,7 @@ pub static ATTACK_HEAVY_SLASH: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_CRUSHER: Attack<'_> = Attack {
+pub const ATTACK_CRUSHER: Attack<'_> = Attack {
     name: "Crusher",
     desc: "Attacks with a crushing blow",
     cost: 5,
@@ -78,7 +78,7 @@ pub static ATTACK_CRUSHER: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_ARROW_RAID: Attack<'_> = Attack {
+pub const ATTACK_ARROW_RAID: Attack<'_> = Attack {
     name: "Arrow Raid",
     desc: "Attacks with myriad arrows",
     cost: 5,
@@ -89,7 +89,7 @@ pub static ATTACK_ARROW_RAID: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_MAGIC_MISSILE: Attack<'_> = Attack {
+pub const ATTACK_MAGIC_MISSILE: Attack<'_> = Attack {
     name: "Magic Missile",
     desc: "Launches a magic projectile that always hits its target",
     cost: 5,
@@ -100,7 +100,7 @@ pub static ATTACK_MAGIC_MISSILE: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_FIREBLAST: Attack<'_> = Attack {
+pub const ATTACK_FIREBLAST: Attack<'_> = Attack {
     name: "Fireblast",
     desc: "Shoots a fireball",
     cost: 5,
@@ -111,7 +111,7 @@ pub static ATTACK_FIREBLAST: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_ICE_BEAM: Attack<'_> = Attack {
+pub const ATTACK_ICE_BEAM: Attack<'_> = Attack {
     name: "Ice Beam",
     desc: "Fires a freezing laser",
     cost: 5,
@@ -122,7 +122,7 @@ pub static ATTACK_ICE_BEAM: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_THUNDER: Attack<'_> = Attack {
+pub const ATTACK_THUNDER: Attack<'_> = Attack {
     name: "Thunder",
     desc: "Calls down a lightning bolt",
     cost: 5,
@@ -133,7 +133,7 @@ pub static ATTACK_THUNDER: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_WIND_BLAST: Attack<'_> = Attack {
+pub const ATTACK_WIND_BLAST: Attack<'_> = Attack {
     name: "Wind Blast",
     desc: "Attacks with a gust of wind",
     cost: 5,
@@ -144,7 +144,7 @@ pub static ATTACK_WIND_BLAST: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_QUAKE: Attack<'_> = Attack {
+pub const ATTACK_QUAKE: Attack<'_> = Attack {
     name: "Quake",
     desc: "Causes a mini earthquake",
     cost: 5,
@@ -155,7 +155,7 @@ pub static ATTACK_QUAKE: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_DARK_FORCE: Attack<'_> = Attack {
+pub const ATTACK_DARK_FORCE: Attack<'_> = Attack {
     name: "Dark Force",
     desc: "Attacks with a dark power",
     cost: 5,
@@ -166,7 +166,7 @@ pub static ATTACK_DARK_FORCE: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_RADIANCE: Attack<'_> = Attack {
+pub const ATTACK_RADIANCE: Attack<'_> = Attack {
     name: "Radiance",
     desc: "Attacks with a shining light",
     cost: 5,
@@ -177,7 +177,7 @@ pub static ATTACK_RADIANCE: Attack<'_> = Attack {
     target: TARGET_FOE
 };
 
-pub static ATTACK_HEAL: Attack<'_> = Attack {
+pub const ATTACK_HEAL: Attack<'_> = Attack {
     name: "Heal",
     desc: "Restores HP equal to the user's spirit stat",
     cost: 5,
