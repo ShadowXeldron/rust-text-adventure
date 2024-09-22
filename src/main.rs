@@ -64,7 +64,7 @@ pub struct ElementalEffects<'a> {
 // Fake globals implementation so that I don't have to use unsafe
 pub struct GlobalData<'a> {
     pub coins: u32, // u32 currency value
-    pub players: &'a mut [Hero <'a>],
+    pub players: Vec<Hero<'a>>,
     pub alignment: i8,
 }
 
@@ -92,10 +92,6 @@ impl GlobalData<'_> {
 
 // Actual code begins here
 fn main() {
-    //let player.title: String = "Newbie".to_string();
-    
-
-    //clear();
     println!("Really basic Rust (was python) text adventure");
     //println!("\nAsk the player whether they want to load a save");
 
@@ -104,7 +100,7 @@ fn main() {
     let binding = input::<String>().get();
     let player_name: &str = binding.as_str();
     let player = generate_character(player_name); // Temporary immutability while I test combat mechanics
-    let global: GlobalData = GlobalData { coins: 0, players: &mut [player], alignment: 0 };
+    let global: GlobalData = GlobalData { coins: 0, players: vec![player], alignment: 0 };
 
     // New game startup sequence;
 

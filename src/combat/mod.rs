@@ -65,7 +65,7 @@ const ELEMENT_NAMES: &[&str] = &["Neutral", "Slash", "Pierce", "Impact", "Fire",
 
 pub struct BattleResult<'a> {
     pub result_type: u8,
-    pub party: &'a mut [Hero <'a>]
+    pub party: Vec<Hero<'a>>
 }
 
 // Add targeting stuff
@@ -77,7 +77,7 @@ pub struct BattleResult<'a> {
     3. Battle resolved peacefully by negotiation
 */
 
-pub fn battle_start<'a> (players: &'a mut [Hero<'a>], mut baddies: Vec<Mob> /*slice filled with encounter data*/ ) -> BattleResult<'a> {
+pub fn battle_start<'a> (mut players: Vec<Hero<'a>>, mut baddies: Vec<Mob> /*slice filled with encounter data*/ ) -> BattleResult<'a> {
     const DMG_HURT: u8 = 1;
     const DMG_REPEL: u8 = 2;
     const DMG_ABSORB: u8 = 3;
@@ -293,7 +293,8 @@ pub fn battle_start<'a> (players: &'a mut [Hero<'a>], mut baddies: Vec<Mob> /*sl
         println!("\nEnemy Turn\n");
         for counter in &mut baddies {
 
-            let target = &mut players[rand::thread_rng().gen_range(0..players.len())];
+            let playerlen: usize = players.len();
+            let target: &mut Hero<'a> = &mut players[rand::thread_rng().gen_range(0..playerlen)];
 
             if counter.hp > 0 && target.hp > 0 {
 
@@ -344,7 +345,7 @@ pub fn battle_start<'a> (players: &'a mut [Hero<'a>], mut baddies: Vec<Mob> /*sl
         }
     }
         // If it all ends miserably, end the fight
-        if is_enemy_side_beaten(&baddies) || is_player_side_beaten(players) {break}
+        if is_enemy_side_beaten(&baddies) || is_player_side_beaten(&players) {break}
     }
 
     // If the loop breaks, check for hit points. If the enemy team was annihlated, return 0 to signal a victory. But if the player team was defeated, return 1 to signal a loss.
@@ -597,7 +598,7 @@ fn is_enemy_side_beaten(baddies: &Vec<Mob>) -> bool {
     true
 }
 
-fn is_player_side_beaten(players: &[Hero<'_>]) -> bool {
+fn is_player_side_beaten(players: &Vec<Hero>) -> bool {
     for counter in players {
         if counter.hp != 0 {return false}
     }
