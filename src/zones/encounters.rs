@@ -11,14 +11,13 @@ use crate::combat::mobs::*;
         dialogue: "Suddenly, an aggressive rock with googly eyes shows up and attacks you!",
         fight_table: Some(ENCTABLE_SINGLE_PEBBLE)
     },
-    
+
     NPC {
         name: "goblin", // Not really needed for these but still
         dialogue: "A goblin sneaks up and attacks you!",
         fight_table: Some(ENCTABLE_SINGLE_GOBLIN)
     }
 ];*/
-    
 
 pub const ENCTABLE_SINGLE_PEBBLE: &[Mob] = &[MOB_PEBBLE];
 pub const ENCTABLE_SINGLE_GOBLIN: &[Mob] = &[MOB_GOBLIN];

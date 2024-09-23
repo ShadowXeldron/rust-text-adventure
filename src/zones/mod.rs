@@ -2,7 +2,8 @@
 // Due to necessary recursive borrowing, the zones need to be static which means they'll be floating around in memory throughout the program's runtime. I don't like that.
 
 use crate::Mob;
-mod encounters; use crate::zones::encounters::*;
+mod encounters;
+use crate::zones::encounters::*;
 
 #[derive(Copy, Clone)]
 pub struct Zone<'a> {
@@ -24,7 +25,7 @@ impl Zone<'_> {
         for counter in npc_list {
             if counter.name == npc {
                 println!("{}", counter.dialogue);
-                return
+                return;
             }
         }
 
@@ -45,16 +46,15 @@ pub struct Connections<'a> {
 
 #[derive(Copy, Clone)]
 pub struct NPC<'a> {
-    pub name: &'a str, // Enemy name used in the parser
+    pub name: &'a str,     // Enemy name used in the parser
     pub dialogue: &'a str, // Text that always shows when you talk to the NPC
     pub fight_table: Option<&'a [Mob<'a>]>, // Table of random encounters, used for the attack command or NPCs spawned randomly
-    // Should add an FnMut for running custom events
-    //  pub event_talk
-    //  pub event_attack
+                                            // Should add an FnMut for running custom events
+                                            //  pub event_talk
+                                            //  pub event_attack
 }
 
 impl<'a> NPC<'a> {
-    
     pub fn get_exp_from_encounters(&self) -> u16 {
         let mut exp_drop: u16 = 0;
         // Iterate through table and reward EXP for all foes (to account for when support for enemy formations is properly added)
@@ -341,7 +341,7 @@ pub static CASTLE_2F_SOUTHWEST_TOWER: Zone = Zone {
         down: Some(&CASTLE_1F_SOUTHWEST_TOWER),
     },
 
-    random_encounters: None
+    random_encounters: None,
 };
 
 pub static CASTLE_2F_NORTHEAST_TOWER: Zone = Zone {
@@ -360,7 +360,7 @@ pub static CASTLE_2F_NORTHEAST_TOWER: Zone = Zone {
         down: Some(&CASTLE_1F_NORTHEAST_TOWER),
     },
 
-    random_encounters: None
+    random_encounters: None,
 };
 
 pub static CASTLE_2F_NORTHWEST_TOWER: Zone = Zone {
@@ -379,7 +379,7 @@ pub static CASTLE_2F_NORTHWEST_TOWER: Zone = Zone {
         down: Some(&CASTLE_1F_NORTHWEST_TOWER),
     },
 
-    random_encounters: None
+    random_encounters: None,
 };
 
 // Third floor
@@ -433,9 +433,8 @@ pub static CASTLE_GF_NORTHWEST_TOWER: Zone = Zone {
         down: None,
     },
 
-    random_encounters: None
+    random_encounters: None,
 };
-
 
 pub static CASTLE_GF_ENTRANCE: Zone = Zone {
     name: "Castle Ground Floor: Entrance Hall",
@@ -453,9 +452,8 @@ pub static CASTLE_GF_ENTRANCE: Zone = Zone {
         down: None,
     },
 
-    random_encounters: None
+    random_encounters: None,
 };
-
 
 // Basement
 
@@ -475,7 +473,7 @@ pub static CASTLE_B1F_HALLWAY: Zone = Zone {
         down: None,
     },
 
-    random_encounters: None
+    random_encounters: None,
 };
 
 pub static CASTLE_B1F_DUNGEON: Zone = Zone {
@@ -494,7 +492,7 @@ pub static CASTLE_B1F_DUNGEON: Zone = Zone {
         down: None,
     },
 
-    random_encounters: None
+    random_encounters: None,
 };
 
 pub static CASTLE_B1F_TORTURE_CHAMBER: Zone = Zone {
@@ -513,11 +511,5 @@ pub static CASTLE_B1F_TORTURE_CHAMBER: Zone = Zone {
         down: None,
     },
 
-    random_encounters: None
+    random_encounters: None,
 };
-
-
-
-
-
-

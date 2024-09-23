@@ -1,6 +1,6 @@
 //mod combat;
-use crate::combat::*;
 use crate::combat::attacks::*;
+use crate::combat::*;
 use crate::*;
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
@@ -16,7 +16,7 @@ pub struct Mob<'a> {
     pub stats: Stats,
     pub hp_mod: u16, // Additional HP on top of the standard HP calcualtions
     pub elements: ElementalEffects<'a>,
-    pub movelist: &'a [Attack<'a>]
+    pub movelist: &'a [Attack<'a>],
 }
 
 pub const MOB_PEBBLE: Mob<'_> = Mob {
@@ -37,7 +37,7 @@ pub const MOB_PEBBLE: Mob<'_> = Mob {
         ac: 0,
         mr: 0,
         wp: 1,
-        sp: 0
+        sp: 0,
     },
     hp_mod: 30,
 
@@ -50,8 +50,7 @@ pub const MOB_PEBBLE: Mob<'_> = Mob {
         avoid: None,
     },
 
-    movelist: &[ATTACK_TACKLE, ATTACK_HEAL]
-
+    movelist: &[ATTACK_TACKLE, ATTACK_HEAL],
 };
 
 pub const MOB_GOBLIN: Mob<'_> = Mob {
@@ -72,7 +71,7 @@ pub const MOB_GOBLIN: Mob<'_> = Mob {
         ac: 0,
         mr: 0,
         wp: 1,
-        sp: 0
+        sp: 0,
     },
     hp_mod: 0,
 
@@ -85,8 +84,7 @@ pub const MOB_GOBLIN: Mob<'_> = Mob {
         avoid: None,
     },
 
-    movelist: &[ATTACK_STAB]
-
+    movelist: &[ATTACK_STAB],
 };
 
 pub const MOB_GRUE: Mob<'_> = Mob {
@@ -107,21 +105,30 @@ pub const MOB_GRUE: Mob<'_> = Mob {
         ac: 0xff,
         mr: 0xff,
         wp: 0xff,
-        sp: 0xff
+        sp: 0xff,
     },
     hp_mod: 0,
 
     elements: ElementalEffects {
         weak: Some(&[TYPE_LIGHT]),
         resist: None,
-        immune: Some(&[TYPE_NEUTRAL, TYPE_SLASH, TYPE_PIERCE, TYPE_IMPACT, TYPE_FIRE, TYPE_ELECTRIC, TYPE_ICE, TYPE_GROUND, TYPE_WIND]),
+        immune: Some(&[
+            TYPE_NEUTRAL,
+            TYPE_SLASH,
+            TYPE_PIERCE,
+            TYPE_IMPACT,
+            TYPE_FIRE,
+            TYPE_ELECTRIC,
+            TYPE_ICE,
+            TYPE_GROUND,
+            TYPE_WIND,
+        ]),
         heal: Some(&[TYPE_DARK]), // Some(&[TYPE_SLASH])
         reflect: None,
         avoid: None,
     },
 
-    movelist: &[ATTACK_DEVOUR]
-
+    movelist: &[ATTACK_DEVOUR],
 };
 
 // Monster classes
@@ -129,40 +136,3 @@ pub const MOB_GRUE: Mob<'_> = Mob {
 //MOBCLASS_NAMES = &["Monster", "Stoneforme"]
 
 //MOBCLASS_MONSTER = 0 // Generic fallback class
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

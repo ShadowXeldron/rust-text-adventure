@@ -51,7 +51,8 @@ pub const MATERIAL_CLOTH: u8 = 10;
 pub const MATERIAL_LEATHER: u8 = 11;
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
-pub struct Item<'a> { // In the interest of being tidy and modular I have introduced too many Somes and dots
+pub struct Item<'a> {
+    // In the interest of being tidy and modular I have introduced too many Somes and dots
     // Flavour
     pub name: &'a str,
     pub description: &'a str,
@@ -59,7 +60,7 @@ pub struct Item<'a> { // In the interest of being tidy and modular I have introd
     // Universal info
     pub is_key_item: bool, // If true, this item cannot be removed from the inventory outside of set events
     pub material: u8,
-    pub equipment_data: Option<EquipmentData> // If None, it can't be equipped.
+    pub equipment_data: Option<EquipmentData>, // If None, it can't be equipped.
 }
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
@@ -88,12 +89,13 @@ pub struct WeaponData {
 pub struct ArmourData {
     pub ac: u8, // Armour class
     pub mr: u8, // Magic Resistance
-    //pub reverse_mr: bool // Potential cheat to reverse
+                //pub reverse_mr: bool // Potential cheat to reverse
 }
 
 pub const ITEM_IRON_SWORD: Item = Item {
     name: "Iron Sword",
-    description: "A metallic shortsword made out of wrought iron. Not particularly difficult to wield.",
+    description:
+        "A metallic shortsword made out of wrought iron. Not particularly difficult to wield.",
 
     is_key_item: false,
     material: MATERIAL_IRON,
@@ -109,6 +111,6 @@ pub const ITEM_IRON_SWORD: Item = Item {
             hit_rate: 95,
             element_override: None,
         }),
-        armour_data: None
-    })
+        armour_data: None,
+    }),
 };
