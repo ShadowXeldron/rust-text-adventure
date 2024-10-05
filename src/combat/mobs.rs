@@ -1,6 +1,6 @@
 //mod combat;
 use crate::combat::attacks::*;
-use crate::combat::*;
+//use crate::combat::*;
 use crate::*;
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
@@ -42,10 +42,10 @@ pub const MOB_PEBBLE: Mob<'_> = Mob {
 	hp_mod: 30,
 
 	elements: ElementalEffects {
-		weak: Some(&[TYPE_IMPACT, TYPE_ICE, TYPE_GROUND]),
-		resist: Some(&[TYPE_SLASH, TYPE_WIND, TYPE_ELECTRIC]),
+		weak: Some(&[Element::Impact, Element::Ice, Element::Earth]),
+		resist: Some(&[Element::Slash, Element::Air, Element::Electric]),
 		immune: None,
-		heal: None, // Some(&[TYPE_SLASH])
+		heal: None, // Some(&[Element::Slash])
 		reflect: None,
 		avoid: None,
 	},
@@ -76,10 +76,10 @@ pub const MOB_GOBLIN: Mob<'_> = Mob {
 	hp_mod: 0,
 
 	elements: ElementalEffects {
-		weak: Some(&[TYPE_SLASH, TYPE_ICE]),
+		weak: Some(&[Element::Slash, Element::Ice]),
 		resist: None,
 		immune: None,
-		heal: None, // Some(&[TYPE_SLASH])
+		heal: None, // Some(&[Element::Slash])
 		reflect: None,
 		avoid: None,
 	},
@@ -110,20 +110,20 @@ pub const MOB_GRUE: Mob<'_> = Mob {
 	hp_mod: 0,
 
 	elements: ElementalEffects {
-		weak: Some(&[TYPE_LIGHT]),
+		weak: Some(&[Element::Light]),
 		resist: None,
 		immune: Some(&[
-			TYPE_NEUTRAL,
-			TYPE_SLASH,
-			TYPE_PIERCE,
-			TYPE_IMPACT,
-			TYPE_FIRE,
-			TYPE_ELECTRIC,
-			TYPE_ICE,
-			TYPE_GROUND,
-			TYPE_WIND,
+			Element::Neutral,
+			Element::Slash,
+			Element::Pierce,
+			Element::Impact,
+			Element::Fire,
+			Element::Electric,
+			Element::Ice,
+			Element::Earth,
+			Element::Air,
 		]),
-		heal: Some(&[TYPE_DARK]), // Some(&[TYPE_SLASH])
+		heal: Some(&[Element::Dark]), // Some(&[Element::Slash])
 		reflect: None,
 		avoid: None,
 	},

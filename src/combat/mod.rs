@@ -16,27 +16,6 @@ pub const BATTLE_RESULT_FAILURE: u8 = 1; // Total party kill. This is considered
 pub const BATTLE_RESULT_ESCAPE: u8 = 2; // Battle canceled by player escaping
 pub const BATTLE_RESULT_TRUCE: u8 = 3; // Peaceful resolution from negotiation
 
-const MOVE_PHYSICAL: u8 = 0;
-const MOVE_MAGIC: u8 = 1;
-const MOVE_STATUS: u8 = 2;
-const MOVE_INSTANT_KILL: u8 = 3;
-
-const TARGET_FOE: u8 = 0;
-const TARGET_SELF: u8 = 1;
-
-const TYPE_NEUTRAL: u8 = 0;
-const TYPE_SLASH: u8 = 1;
-const TYPE_PIERCE: u8 = 2;
-const TYPE_IMPACT: u8 = 3;
-
-const TYPE_FIRE: u8 = 4;
-const TYPE_ICE: u8 = 5;
-const TYPE_ELECTRIC: u8 = 6;
-const TYPE_WIND: u8 = 7;
-const TYPE_GROUND: u8 = 8;
-const TYPE_DARK: u8 = 9;
-const TYPE_LIGHT: u8 = 10;
-
 /*
 // Weapon type constants, for later
 
@@ -59,27 +38,24 @@ const WEAPON_WAND: u8 = 12;
 const WEAPON_KNIFE: u8 = 13;*/
 
 // Array for checking weapon damage types, although for autogen knives will do slash or pierce damage depending on what's more effective
-const WEAPON_DAMAGE_TYPES: [u8; 13] = [
-	TYPE_NEUTRAL, /* Barehand */
-	TYPE_SLASH,   /* Sword */
-	TYPE_SLASH,   /* Greatsword */
-	TYPE_SLASH,   /* Axe */
-	TYPE_SLASH,   /* Greataxe */
-	TYPE_PIERCE,  /* Spear */
-	TYPE_PIERCE,  /* Polearm */
-	TYPE_PIERCE,  /* Bow */
-	TYPE_IMPACT,  /* Club */
-	TYPE_IMPACT,  /* Hammer */
-	TYPE_IMPACT,  /* Staff */
-	TYPE_NEUTRAL, /* Wand */
-	TYPE_PIERCE,  /* Knife */
+const WEAPON_DAMAGE_TYPES: [Element; 13] = [
+	Element::Neutral, /* Barehand */
+	Element::Slash,   /* Sword */
+	Element::Slash,   /* Greatsword */
+	Element::Slash,   /* Axe */
+	Element::Slash,   /* Greataxe */
+	Element::Pierce,  /* Spear */
+	Element::Pierce,  /* Polearm */
+	Element::Pierce,  /* Bow */
+	Element::Impact,  /* Club */
+	Element::Impact,  /* Hammer */
+	Element::Impact,  /* Staff */
+	Element::Neutral, /* Wand */
+	Element::Pierce,  /* Knife */
 ];
 
-// Constant array of string names for the elements
-const ELEMENT_NAMES: &[&str] = &[
-	"Neutral", "Slash", "Pierce", "Impact", "Fire", "Ice", "Electric", "Wind", "Ground", "Dark",
-	"Light",
-];
+// I previously used this constant array of string names for the elements before reworking the elements into an enum
+// const ELEMENT_NAMES: &[&str] = &["Neutral", "Slash", "Pierce", "Impact", "Fire", "Ice", "Electric", "Wind", "Ground", "Dark", "Light",];
 
 pub struct BattleResult<'a> {
 	pub result_type: u8,
@@ -133,7 +109,7 @@ pub fn battle_start<'a>(mut players: Vec<Hero<'a>>, mut baddies: Vec<Mob>) -> Ba
 	}
 
 	let mut dmg_mode: u8; // Used for deciding whether damage is dealt nomrmally, reflected or absorbed
-	let mut attack: Attack; // Attack to use
+	let mut attack: Option<Attack> = Some(ATTACK_TACKLE); // Attack to use
 	let mut command: u8; // Used to select the player's command
 	let mut enable_player_commands: bool;
 
@@ -208,188 +184,189 @@ pub fn battle_start<'a>(mut players: Vec<Hero<'a>>, mut baddies: Vec<Mob>) -> Ba
 				// Before starting, make sure the enemy has not been KO'd. We only need to check for enemy HP because it's the player's turn
 				if is_enemy_side_beaten(&baddies) {
 					break;
-				}
+				} else if players[counter].hp != 0 {
+					// Otherwise have the player select a command
+					loop {
+						println!(
+							"{}'s HP: {} / {}",
+							players[counter].name, players[counter].hp, players[counter].max_hp
+						);
+						println!(
+							"{}'s MP: {} / {}",
+							players[counter].name, players[counter].mp, players[counter].max_mp
+						);
 
-				// Otherwise have the player select a command
-				loop {
-					println!(
-						"{}'s HP: {} / {}",
-						players[counter].name, players[counter].hp, players[counter].max_hp
-					);
-					println!(
-						"{}'s MP: {} / {}",
-						players[counter].name, players[counter].mp, players[counter].max_mp
-					);
+						println!("{}", baddies[0].name);
+						println!("Enemy HP: {} / {}", baddies[0].hp, baddies[0].max_hp);
+						println!("Enemy MP: {} / {}", baddies[0].mp, baddies[0].max_mp);
 
-					println!("{}", baddies[0].name);
-					println!("Enemy HP: {} / {}", baddies[0].hp, baddies[0].max_hp);
-					println!("Enemy MP: {} / {}", baddies[0].mp, baddies[0].max_mp);
+						println!("Player turn.");
+						println!("What should {} do?\n1) Normal Attack\n2) Use ability from spells list\n3) Use item from inventory\n4) Guard", players[counter].name);
 
-					println!("Player turn.");
-					println!("What should {} do?\n1) Normal Attack\n2) Use ability from spells list\n3) Use item from inventory\n4) Guard", players[counter].name);
+						command = input::<u8>().get();
 
-					command = input::<u8>().get();
+						match command {
+							1 => {
+								// Physical attack
+								println!("{} attacks", players[counter].name);
+								attack = generate_weapon_attack(players[counter].equipment.weapon);
+								break;
+							}
 
-					match command {
-						1 => {
-							// Physical attack
-							println!("{} attacks", players[counter].name);
-							attack = generate_weapon_attack(players[counter].equipment.weapon);
-							break;
-						}
-
-						2 => {
-							// List spells
-							if players[counter].movelist.is_empty() {
-								println!("{} doesn't know any spells.", players[counter].name)
-							} else {
-								println!("Abilities:");
-								for (counter, attack) in
-									players[counter].movelist.iter().enumerate()
-								{
-									println!("{} - {}", counter + 1, attack.name);
-								}
-
-								// Cast attack from spells list
-								print!("\nEnter spell number:");
-								let spell: usize = input::<usize>().get();
-
-								if spell > players[counter].movelist.len() {
-									println!("Spell outside attack range")
+							2 => {
+								// List spells
+								if players[counter].movelist.is_empty() {
+									println!("{} doesn't know any spells.", players[counter].name)
 								} else {
-									show_attack_info(players[counter].movelist[spell - 1]);
-									// Add a "use spell? (y/n)" here
-									attack = players[counter].movelist[spell - 1];
+									println!("Abilities:");
+									for (counter, attack) in
+										players[counter].movelist.iter().enumerate()
+									{
+										println!("{} - {}", counter + 1, attack.name);
+									}
 
-									if players[counter].mp >= attack.cost {
-										// Magic Attack
+									// Cast attack from spells list
+									print!("\nEnter spell number:");
+									let spell: usize = input::<usize>().get();
 
-										players[counter].mp -= attack.cost;
-										println!("Player used {}!", attack.name);
-										break;
+									if spell > players[counter].movelist.len() {
+										println!("Spell outside attack range")
 									} else {
-										println!(
-											"Player does not have enough MP to use {}",
-											attack.name
-										);
+										show_attack_info(players[counter].movelist[spell - 1]);
+										// Add a "use spell? (y/n)" here
+										attack = Some(players[counter].movelist[spell - 1]);
+
+										if players[counter].mp >= attack.unwrap().cost {
+											// Subtract MP cost before using the attack
+											players[counter].mp -= attack.unwrap().cost;
+											println!("Player used {}!", attack.unwrap().name);
+											break;
+										} else {
+											println!(
+												"Player does not have enough MP to use {}",
+												attack.unwrap().name
+											);
+										}
 									}
 								}
 							}
-						}
 
-						3 => {
-							println!("I cannot think of a funny quip related to items");
-						}
+							3 => {
+								println!("I cannot think of a funny quip related to items");
+							}
 
-						4 => {
-							println!("Stop right there, criminal scum! You thought you could yse a feature that hasn't been added yet?");
-						}
+							4 => {
+								println!("Stop right there, criminal scum! You thought you could yse a feature that hasn't been added yet?");
+							}
 
-						_ => {
-							println!("Invalid command!");
+							_ => {
+								println!("Invalid command!");
+							}
 						}
 					}
 				}
 
 				// Now use the attack
-				// Cloning is bad for performance so I'm not particularly happy about doing this. This should ideally be changed to avoid cloning if possible but it's fine for now since it's not like a single-thread text adventure is going to need too much memory anyway.
-				let target: usize = if baddies.clone().len() < 2 {
-					0
-				} else {
-					get_target(baddies.clone())
-				}; // This should prompt the player to choose an enemy, but right now only the enemy in target slot 0 is counted. If there are no enemies, force 0 to prevent issues
+				if attack.is_some() {
+					// Cloning is bad for performance so I'm not particularly happy about doing this. This should ideally be changed to avoid cloning if possible but it's fine for now since it's not like a single-thread text adventure is going to need too much memory anyway.
+					let target: usize = if baddies.clone().len() < 2 {
+						0
+					} else {
+						get_target(baddies.clone())
+					}; // This should prompt the player to choose an enemy, but right now only the enemy in target slot 0 is counted. If there are no enemies, force 0 to prevent issues
 
-				// Perform elemental checks
-				if baddies[target].elements.heal.is_some()
-					&& baddies[target]
-						.elements
-						.heal
-						.expect("Invalid target element")
-						.contains(&attack.element)
-				{
-					dmg_mode = DMG_ABSORB;
-				} else if baddies[target].elements.reflect.is_some()
-					&& baddies[target]
-						.elements
-						.reflect
-						.expect("Invalid target element")
-						.contains(&attack.element)
-				{
-					dmg_mode = DMG_REPEL;
-				} else {
-					dmg_mode = DMG_HURT;
-				}
-
-				// Inflict damage at the end of the player's turn
-				match dmg_mode {
-					DMG_ABSORB => {
-						// Force attack to hit no matter what
-						attack.hit_rate = 101;
-
-						println!(
-							"But the target absorbs {}!",
-							ELEMENT_NAMES[usize::from(attack.element)]
-						); // This was done because I really don't need usize for element descriptors
-						damage = calculate_damage(
-							attack,
-							players[0].stats,
-							baddies[target].stats,
-							baddies[target].elements,
-						) / 2;
-						println!("{} recovered {} HP!", baddies[target].name, damage);
-						baddies[target].hp += damage;
-						if baddies[target].hp > baddies[target].max_hp {
-							baddies[target].hp = baddies[target].max_hp
-						}
+					// Perform elemental checks
+					if baddies[target].elements.heal.is_some()
+						&& baddies[target]
+							.elements
+							.heal
+							.expect("Invalid target element")
+							.contains(&attack.unwrap().element)
+					{
+						dmg_mode = DMG_ABSORB;
+					} else if baddies[target].elements.reflect.is_some()
+						&& baddies[target]
+							.elements
+							.reflect
+							.expect("Invalid target element")
+							.contains(&attack.unwrap().element)
+					{
+						dmg_mode = DMG_REPEL;
+					} else {
+						dmg_mode = DMG_HURT;
 					}
 
-					DMG_REPEL => {
-						// Force attack to hit no matter what
-						attack.hit_rate = 101;
+					// Inflict damage at the end of the player's turn
+					match dmg_mode {
+						DMG_ABSORB => {
+							// Force attack to hit no matter what
+							attack.unwrap().hit_rate = 101;
 
-						println!(
-							"But the target reflects {}!",
-							ELEMENT_NAMES[usize::from(attack.element)]
-						);
-						damage = calculate_damage(
-							attack,
-							players[0].stats,
-							players[0].stats,
-							baddies[target].elements,
-						);
-
-						println!("{} took {damage} damage!", players[0].name);
-						if damage > players[0].hp {
-							players[0].hp = 0;
-						} else {
-							baddies[target].hp -= damage;
-						}
-					}
-
-					_ => {
-						damage = calculate_damage(
-							attack,
-							players[0].stats,
-							baddies[target].stats,
-							baddies[target].elements,
-						);
-
-						if damage > 0 {
 							println!(
-								"The attack did {} damage to the {}.",
-								damage, baddies[target].name
+								"But the target absorbs {}!",
+								attack.unwrap().element.get_element_name()
+							); // This was done because I really don't need usize for element descriptors
+							damage = calculate_damage(
+								attack.unwrap(),
+								players[0].stats,
+								baddies[target].stats,
+								baddies[target].elements,
+							) / 2;
+							println!("{} recovered {} HP!", baddies[target].name, damage);
+							baddies[target].hp += damage;
+							if baddies[target].hp > baddies[target].max_hp {
+								baddies[target].hp = baddies[target].max_hp
+							}
+						}
+
+						DMG_REPEL => {
+							// Force attack to hit no matter what
+							attack.unwrap().hit_rate = 101;
+
+							println!(
+								"But the target reflects {}!",
+								attack.unwrap().element.get_element_name()
+							);
+							damage = calculate_damage(
+								attack.unwrap(),
+								players[0].stats,
+								players[0].stats,
+								baddies[target].elements,
 							);
 
-							// To prevent underflowing when your damage output exceeds the enemy's HP
-							if damage > baddies[target].hp {
-								baddies[target].hp = 0;
+							println!("{} took {damage} damage!", players[0].name);
+							if damage > players[0].hp {
+								players[0].hp = 0;
 							} else {
 								baddies[target].hp -= damage;
 							}
+						}
 
-							if baddies[target].hp == 0 {
-								println!("{} was vaniqushed!", baddies[target].name)
-							};
+						_ => {
+							damage = calculate_damage(
+								attack.unwrap(),
+								players[0].stats,
+								baddies[target].stats,
+								baddies[target].elements,
+							);
+
+							if damage > 0 {
+								println!(
+									"The attack did {} damage to the {}.",
+									damage, baddies[target].name
+								);
+
+								// To prevent underflowing when your damage output exceeds the enemy's HP
+								if damage > baddies[target].hp {
+									baddies[target].hp = 0;
+								} else {
+									baddies[target].hp -= damage;
+								}
+
+								if baddies[target].hp == 0 {
+									println!("{} was vaniqushed!", baddies[target].name)
+								};
+							}
 						}
 					}
 				}
@@ -407,23 +384,28 @@ pub fn battle_start<'a>(mut players: Vec<Hero<'a>>, mut baddies: Vec<Mob>) -> Ba
 
 				// Needs handling for if an enemy has no 0 MP attacks
 				loop {
-					attack =
-						counter.movelist[rand::thread_rng().gen_range(0..counter.movelist.len())];
+					attack = Some(
+						counter.movelist[rand::thread_rng().gen_range(0..counter.movelist.len())],
+					);
 
-					if counter.mp >= attack.cost {
+					if counter.mp >= attack.unwrap().cost {
 						break;
 					}
 				}
 
-				println!("The enemy used {}!", attack.name);
-				counter.mp -= attack.cost;
+				println!("The enemy used {}!", attack.unwrap().name);
+				counter.mp -= attack.unwrap().cost;
 
-				match attack.target {
-					TARGET_FOE => {
-						damage =
-							calculate_damage(attack, counter.stats, target.stats, counter.elements);
+				match attack.unwrap().target {
+					TargetClass::Foe => {
+						damage = calculate_damage(
+							attack.unwrap(),
+							counter.stats,
+							target.stats,
+							counter.elements,
+						);
 						if damage > 0 {
-							println!("You took {damage} damage!");
+							println!("{} took {damage} damage!", target.name);
 							// To prevent underflowing when your damage output exceeds the player's HP
 							if damage > target.hp {
 								target.hp = 0;
@@ -433,10 +415,10 @@ pub fn battle_start<'a>(mut players: Vec<Hero<'a>>, mut baddies: Vec<Mob>) -> Ba
 						}
 					}
 
-					TARGET_SELF => {
-						if attack.power > 0 {
+					TargetClass::Ally => {
+						if attack.unwrap().power > 0 {
 							damage = u16::from(
-								counter.stats.spirit + counter.stats.level + attack.power,
+								counter.stats.spirit + counter.stats.level + attack.unwrap().power,
 							);
 							counter.hp += damage;
 							if counter.hp > counter.max_hp {
@@ -482,7 +464,7 @@ fn show_attack_info(attack: Attack) {
 	println!("MP Cost: {}", attack.cost);
 	println!(
 		"Element: {}   Base Power: {}   Hit Rate: {}%",
-		ELEMENT_NAMES[usize::from(attack.element)],
+		attack.element.get_element_name(),
 		attack.power,
 		attack.hit_rate
 	);
@@ -490,7 +472,7 @@ fn show_attack_info(attack: Attack) {
 }
 
 fn do_accuracy_check(
-	attack: Attack, user_stats: Stats, target_stats: Stats, avoid_elements: Option<&[u8]>,
+	attack: Attack, user_stats: Stats, target_stats: Stats, avoid_elements: Option<&[Element]>,
 ) -> bool {
 	// Base hit rates higher than 100 are garunteed hits
 	if attack.hit_rate > 100 {
@@ -498,14 +480,10 @@ fn do_accuracy_check(
 	};
 
 	// Account for avoided elements
-	if avoid_elements.is_some()
-		&& avoid_elements
-			.expect("Invalid avoid element")
-			.contains(&attack.element)
-	{
-		println!("This target always avoids {}", ELEMENT_NAMES[usize::from(attack.element)]);
-		return false;
-	}
+	if avoid_elements.is_some() && avoid_elements.expect("Invalid avoid element").contains(&attack.element) {
+		println!("This target always avoids {}", attack.element.get_element_name());
+		return false
+    }
 
 	// Otherwise, calculate hit rate
 
@@ -534,7 +512,7 @@ fn calculate_damage(
 			.expect("Invalid immune element")
 			.contains(&attack.element)
 	{
-		println!("This target blocks {}", ELEMENT_NAMES[usize::from(attack.element)]);
+		println!("This target blocks {}", attack.element.get_element_name());
 		return 0;
 	} else if !do_accuracy_check(attack, user_stats, target_stats, target_elements.avoid) {
 		println!("The attack missed!");
@@ -545,7 +523,7 @@ fn calculate_damage(
 	let atk: u16;
 	let def: u16;
 
-	if attack.category == MOVE_MAGIC {
+	if attack.category == AttackCategory::Magic {
 		atk = u16::from(attack.power + user_stats.sp + user_stats.intelligence + user_stats.level);
 		def = u16::from(target_stats.mr + target_stats.spirit + target_stats.level) / 2;
 	} else {
@@ -582,7 +560,7 @@ fn calculate_damage(
 	{
 		println!(
 			"{} is super effective against this target!",
-			ELEMENT_NAMES[usize::from(attack.element)]
+			attack.element.get_element_name()
 		);
 		damage *= 2;
 	} else if target_elements.resist.is_some()
@@ -593,7 +571,7 @@ fn calculate_damage(
 	{
 		println!(
 			"{} isn't very effective against this target...",
-			ELEMENT_NAMES[usize::from(attack.element)]
+			attack.element.get_element_name()
 		);
 		damage /= 2;
 	}
@@ -607,7 +585,7 @@ fn calculate_damage(
 
 // For magic attacks, your intelligence stat is used to caclulate both accuracy and attack power
 
-fn generate_weapon_attack(weapon: Option<Item>) -> Attack<'static> {
+fn generate_weapon_attack(weapon: Option<Item>) -> Option<Attack> {
 	// This automatically generates a flat attack based on your equipped weapon
 
 	// Before we start, define the lets
@@ -615,27 +593,27 @@ fn generate_weapon_attack(weapon: Option<Item>) -> Attack<'static> {
 	if weapon.is_some() {
 		let unwrapped_data: EquipmentData = weapon.unwrap().equipment_data.unwrap();
 
-		Attack {
+		Some(Attack {
 			name: "Weapon Attack",
 			desc: "Attack automatically generated from your equipped weapon",
 			cost: 0,
-			category: MOVE_PHYSICAL,
+			category: AttackCategory::Physical,
 			element: WEAPON_DAMAGE_TYPES[usize::from(unwrapped_data.equip_type)],
 			power: 1,
 			hit_rate: unwrapped_data.weapon_data.unwrap().hit_rate,
-			target: TARGET_FOE,
-		}
+			target: TargetClass::Foe,
+		})
 	} else {
-		Attack {
+		Some(Attack {
 			name: "Punch",
 			desc: "Attack generated from a character with no equipped weapon",
 			cost: 0,
-			category: MOVE_PHYSICAL,
-			element: TYPE_NEUTRAL,
+			category: AttackCategory::Physical,
+			element: Element::Neutral,
 			power: 1,
 			hit_rate: 90,
-			target: TARGET_FOE,
-		}
+			target: TargetClass::Foe,
+		})
 	}
 }
 
@@ -737,13 +715,15 @@ fn start_negotiation(hero: Hero, mob: Mob) -> bool {
 fn get_target(baddies: Vec<Mob>) -> usize {
 	let mobcount = baddies.len();
 	println!("Choose target:");
-	for counter in baddies {
+	for counter in &baddies {
 		println!("{} - {} / {} HP", counter.name, counter.hp, counter.max_hp)
 	}
 	loop {
 		let choice: usize = input::<usize>().get();
 		if choice > mobcount || choice == 0 {
 			println!("Invalid target! Pick a number from 1 to {}", mobcount)
+		} else if baddies[choice - 1].hp == 0 {
+			println!("That target has already been defeated.")
 		} else {
 			return choice - 1;
 		}

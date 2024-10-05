@@ -13,6 +13,7 @@ use crate::zones::*;
 pub mod combat;
 pub use crate::combat::mobs::*;
 pub use crate::combat::*;
+use crate::attacks::*;
 
 pub mod dicerolls;
 pub use crate::dicerolls::*;
@@ -53,12 +54,12 @@ pub struct Stats {
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct ElementalEffects<'a> {
-	pub weak: Option<&'a [u8]>, // Slice
-	pub resist: Option<&'a [u8]>,
-	pub immune: Option<&'a [u8]>,
-	pub heal: Option<&'a [u8]>,
-	pub reflect: Option<&'a [u8]>,
-	pub avoid: Option<&'a [u8]>, // Will always dodge this element unless it is forced to hit
+	pub weak: Option<&'a [Element]>, // Slice
+	pub resist: Option<&'a [Element]>,
+	pub immune: Option<&'a [Element]>,
+	pub heal: Option<&'a [Element]>,
+	pub reflect: Option<&'a [Element]>,
+	pub avoid: Option<&'a [Element]>, // Will always dodge this element unless it is forced to hit
 }
 
 // Fake globals implementation so that I don't have to use unsafe
@@ -89,6 +90,31 @@ impl GlobalData<'_> {
 		// Currently undecided on whether party members who are dead or otherwise considered "out"
 		for counter in 0..self.players.len() {
 			self.players[counter].gain_exp(exp)
+		}
+	}
+	
+	// Performs the max HP thing for every character
+	// Consider adding a "full restore" function to evergy character
+	fn reset_party_stat_caps(&mut self) {
+		for counter in &mut self.players {
+			counter.max_hp = u16::from(
+				(counter.stats.constitution * counter.stats.level)
+					+ ((counter.stats.strength / 2) + counter.stats.level)
+					+ 10,
+			);
+			counter.max_mp = u16::from(
+				(counter.stats.intelligence * counter.stats.level)
+					+ counter.stats.spirit
+					+ counter.stats.level,
+			);
+		}
+	}
+	
+	fn heal_and_reset_party_stat_caps(&mut self) {
+		self.reset_party_stat_caps();
+		for counter in &mut self.players {
+			counter.hp = counter.max_hp;
+			counter.mp = counter.max_mp;
 		}
 	}
 }
@@ -135,7 +161,7 @@ fn main() {
 			avoid: None,
 		},
 		exp: 0,
-		movelist: &[],
+		movelist: &[ATTACK_ICE_BEAM],
 		equipment: Equipment {
 			weapon: None,
 			offhand: None,
@@ -150,6 +176,7 @@ fn main() {
 
 	clear().expect("failed to clear screen");
 	println!("{}, be ready to die miserably", player.name);
+	global.heal_and_reset_party_stat_caps(); // Reinitialise the party's data before starting
 
 	show_stat_row(&global, get_title(global.alignment, player.stats.level));
 	player_action(CASTLE_1F_THRONE_ROOM, global);
