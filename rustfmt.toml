@@ -1,0 +1,6 @@
+unstable_features = true
+fn_params_layout = "Compressed"
+control_brace_style = "AlwaysSameLine"
+newline_style = "Unix"
+hard_tabs = true
+fn_call_width = 100

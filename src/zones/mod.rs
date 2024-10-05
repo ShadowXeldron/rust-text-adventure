@@ -7,63 +7,63 @@ use crate::zones::encounters::*;
 
 #[derive(Copy, Clone)]
 pub struct Zone<'a> {
-    pub name: &'a str,
-    pub text: &'a str,
-    pub npcs: Option<&'a [NPC<'a>]>,
-    pub objects: Option<&'a [&'a str]>, // Replace this with a proper item check
-    pub directions: &'a Connections<'a>,
-    pub encounter_rate: u8, // base encounter rate value out of 100
-    pub random_encounters: Option<&'a [NPC<'a>]>,
-    // script: (area-specific stuff for example taking damage in a poison area)
+	pub name: &'a str,
+	pub text: &'a str,
+	pub npcs: Option<&'a [NPC<'a>]>,
+	pub objects: Option<&'a [&'a str]>, // Replace this with a proper item check
+	pub directions: &'a Connections<'a>,
+	pub encounter_rate: u8, // base encounter rate value out of 100
+	pub random_encounters: Option<&'a [NPC<'a>]>,
+	// script: (area-specific stuff for example taking damage in a poison area)
 }
 
 impl Zone<'_> {
-    pub fn talk_npc(&self, npc: &str) {
-        // Iterate through NPC array
-        let npc_list: &[NPC<'_>] = self.npcs.expect("NPC list empty!");
+	pub fn talk_npc(&self, npc: &str) {
+		// Iterate through NPC array
+		let npc_list: &[NPC<'_>] = self.npcs.expect("NPC list empty!");
 
-        for counter in npc_list {
-            if counter.name == npc {
-                println!("{}", counter.dialogue);
-                return;
-            }
-        }
+		for counter in npc_list {
+			if counter.name == npc {
+				println!("{}", counter.dialogue);
+				return;
+			}
+		}
 
-        // Otherwise, return nothing
-        println!("There isn't a {} here.", npc)
-    }
+		// Otherwise, return nothing
+		println!("There isn't a {} here.", npc)
+	}
 }
 
 // Struct for setting up map connections
 pub struct Connections<'a> {
-    pub north: Option<&'a Zone<'a>>,
-    pub south: Option<&'a Zone<'a>>,
-    pub east: Option<&'a Zone<'a>>,
-    pub west: Option<&'a Zone<'a>>,
-    pub up: Option<&'a Zone<'a>>,
-    pub down: Option<&'a Zone<'a>>,
+	pub north: Option<&'a Zone<'a>>,
+	pub south: Option<&'a Zone<'a>>,
+	pub east: Option<&'a Zone<'a>>,
+	pub west: Option<&'a Zone<'a>>,
+	pub up: Option<&'a Zone<'a>>,
+	pub down: Option<&'a Zone<'a>>,
 }
 
 #[derive(Copy, Clone)]
 pub struct NPC<'a> {
-    pub name: &'a str,     // Enemy name used in the parser
-    pub dialogue: &'a str, // Text that always shows when you talk to the NPC
-    pub fight_table: Option<&'a [Mob<'a>]>, // Table of random encounters, used for the attack command or NPCs spawned randomly
-                                            // Should add an FnMut for running custom events
-                                            //  pub event_talk
-                                            //  pub event_attack
+	pub name: &'a str,     // Enemy name used in the parser
+	pub dialogue: &'a str, // Text that always shows when you talk to the NPC
+	pub fight_table: Option<&'a [Mob<'a>]>, // Table of random encounters, used for the attack command or NPCs spawned randomly
+	                                        // Should add an FnMut for running custom events
+	                                        //  pub event_talk
+	                                        //  pub event_attack
 }
 
 impl<'a> NPC<'a> {
-    pub fn get_exp_from_encounters(&self) -> u16 {
-        let mut exp_drop: u16 = 0;
-        // Iterate through table and reward EXP for all foes (to account for when support for enemy formations is properly added)
-        for counter in self.fight_table.unwrap() {
-            exp_drop += counter.exp_reward
-        }
+	pub fn get_exp_from_encounters(&self) -> u16 {
+		let mut exp_drop: u16 = 0;
+		// Iterate through table and reward EXP for all foes (to account for when support for enemy formations is properly added)
+		for counter in self.fight_table.unwrap() {
+			exp_drop += counter.exp_reward
+		}
 
-        exp_drop
-    }
+		exp_drop
+	}
 }
 
 // The Castle
@@ -326,60 +326,60 @@ pub static CASTLE_2F_SOUTHEAST_TOWER: Zone = Zone {
 };
 
 pub static CASTLE_2F_SOUTHWEST_TOWER: Zone = Zone {
-    name: "Castle 2F: Southwest Tower",
-    text: "You are up the southwest tower.\nYou can go down the stairs",
-    encounter_rate: 0,
-    npcs: None,
-    objects: None,
+	name: "Castle 2F: Southwest Tower",
+	text: "You are up the southwest tower.\nYou can go down the stairs",
+	encounter_rate: 0,
+	npcs: None,
+	objects: None,
 
-    directions: &Connections {
-        north: None,
-        south: None,
-        east: None,
-        west: None,
-        up: None,
-        down: Some(&CASTLE_1F_SOUTHWEST_TOWER),
-    },
+	directions: &Connections {
+		north: None,
+		south: None,
+		east: None,
+		west: None,
+		up: None,
+		down: Some(&CASTLE_1F_SOUTHWEST_TOWER),
+	},
 
-    random_encounters: None,
+	random_encounters: None,
 };
 
 pub static CASTLE_2F_NORTHEAST_TOWER: Zone = Zone {
-    name: "Castle 2F: Northeast Tower",
-    text: "You are up the northeast tower.\nYou can go down the stairs.",
-    encounter_rate: 0,
-    npcs: None,
-    objects: None,
+	name: "Castle 2F: Northeast Tower",
+	text: "You are up the northeast tower.\nYou can go down the stairs.",
+	encounter_rate: 0,
+	npcs: None,
+	objects: None,
 
-    directions: &Connections {
-        north: None,
-        south: None,
-        east: None,
-        west: None,
-        up: None,
-        down: Some(&CASTLE_1F_NORTHEAST_TOWER),
-    },
+	directions: &Connections {
+		north: None,
+		south: None,
+		east: None,
+		west: None,
+		up: None,
+		down: Some(&CASTLE_1F_NORTHEAST_TOWER),
+	},
 
-    random_encounters: None,
+	random_encounters: None,
 };
 
 pub static CASTLE_2F_NORTHWEST_TOWER: Zone = Zone {
-    name: "Castle 2F: Northwest Tower",
-    text: "You are up the northwest tower.\nYou can go up or down the stairs.",
-    encounter_rate: 0,
-    npcs: None,
-    objects: None,
+	name: "Castle 2F: Northwest Tower",
+	text: "You are up the northwest tower.\nYou can go up or down the stairs.",
+	encounter_rate: 0,
+	npcs: None,
+	objects: None,
 
-    directions: &Connections {
-        north: None,
-        south: None,
-        east: None,
-        west: None,
-        up: Some(&CASTLE_3F_NORTHWEST_TOWER),
-        down: Some(&CASTLE_1F_NORTHWEST_TOWER),
-    },
+	directions: &Connections {
+		north: None,
+		south: None,
+		east: None,
+		west: None,
+		up: Some(&CASTLE_3F_NORTHWEST_TOWER),
+		down: Some(&CASTLE_1F_NORTHWEST_TOWER),
+	},
 
-    random_encounters: None,
+	random_encounters: None,
 };
 
 // Third floor
@@ -418,98 +418,98 @@ pub static CASTLE_3F_NORTHWEST_TOWER: Zone = Zone {
 // Ground Floor
 
 pub static CASTLE_GF_NORTHWEST_TOWER: Zone = Zone {
-    name: "Castle Ground Floor: Northwest Tower",
-    text: "You are at the bottom of the northwest tower.\nYou can go up or down the stairs.",
-    encounter_rate: 0,
-    npcs: None,
-    objects: None,
+	name: "Castle Ground Floor: Northwest Tower",
+	text: "You are at the bottom of the northwest tower.\nYou can go up or down the stairs.",
+	encounter_rate: 0,
+	npcs: None,
+	objects: None,
 
-    directions: &Connections {
-        north: None,
-        south: None,
-        east: None,
-        west: None,
-        up: Some(&CASTLE_1F_NORTHWEST_TOWER),
-        down: None,
-    },
+	directions: &Connections {
+		north: None,
+		south: None,
+		east: None,
+		west: None,
+		up: Some(&CASTLE_1F_NORTHWEST_TOWER),
+		down: None,
+	},
 
-    random_encounters: None,
+	random_encounters: None,
 };
 
 pub static CASTLE_GF_ENTRANCE: Zone = Zone {
-    name: "Castle Ground Floor: Entrance Hall",
-    text: "You are in the castle's lavishly-decorated entrance hallway.",
-    encounter_rate: 0,
-    npcs: None,
-    objects: None,
+	name: "Castle Ground Floor: Entrance Hall",
+	text: "You are in the castle's lavishly-decorated entrance hallway.",
+	encounter_rate: 0,
+	npcs: None,
+	objects: None,
 
-    directions: &Connections {
-        north: None,
-        south: None,
-        east: None,
-        west: None,
-        up: None,
-        down: None,
-    },
+	directions: &Connections {
+		north: None,
+		south: None,
+		east: None,
+		west: None,
+		up: None,
+		down: None,
+	},
 
-    random_encounters: None,
+	random_encounters: None,
 };
 
 // Basement
 
 pub static CASTLE_B1F_HALLWAY: Zone = Zone {
-    name: "Castle B1F: Hallway",
-    text: "You are in the castle's basement hallway.",
-    encounter_rate: 0,
-    npcs: None,
-    objects: None,
+	name: "Castle B1F: Hallway",
+	text: "You are in the castle's basement hallway.",
+	encounter_rate: 0,
+	npcs: None,
+	objects: None,
 
-    directions: &Connections {
-        north: None,
-        south: None,
-        east: None,
-        west: None,
-        up: None,
-        down: None,
-    },
+	directions: &Connections {
+		north: None,
+		south: None,
+		east: None,
+		west: None,
+		up: None,
+		down: None,
+	},
 
-    random_encounters: None,
+	random_encounters: None,
 };
 
 pub static CASTLE_B1F_DUNGEON: Zone = Zone {
-    name: "Castle B1F: Dungeons",
-    text: "You are in the castle's dungeon.",
-    encounter_rate: 0,
-    npcs: None,
-    objects: None,
+	name: "Castle B1F: Dungeons",
+	text: "You are in the castle's dungeon.",
+	encounter_rate: 0,
+	npcs: None,
+	objects: None,
 
-    directions: &Connections {
-        north: None,
-        south: None,
-        east: None,
-        west: None,
-        up: None,
-        down: None,
-    },
+	directions: &Connections {
+		north: None,
+		south: None,
+		east: None,
+		west: None,
+		up: None,
+		down: None,
+	},
 
-    random_encounters: None,
+	random_encounters: None,
 };
 
 pub static CASTLE_B1F_TORTURE_CHAMBER: Zone = Zone {
-    name: "Castle B1F: Torture Chamber",
-    text: "You are in the castle's torture room.",
-    encounter_rate: 0,
-    npcs: None,
-    objects: None, // Interract with the devices to torture yourself, usually for a stupid death.
+	name: "Castle B1F: Torture Chamber",
+	text: "You are in the castle's torture room.",
+	encounter_rate: 0,
+	npcs: None,
+	objects: None, // Interract with the devices to torture yourself, usually for a stupid death.
 
-    directions: &Connections {
-        north: None,
-        south: None,
-        east: None,
-        west: None,
-        up: None,
-        down: None,
-    },
+	directions: &Connections {
+		north: None,
+		south: None,
+		east: None,
+		west: None,
+		up: None,
+		down: None,
+	},
 
-    random_encounters: None,
+	random_encounters: None,
 };

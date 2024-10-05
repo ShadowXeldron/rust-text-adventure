@@ -52,65 +52,65 @@ pub const MATERIAL_LEATHER: u8 = 11;
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct Item<'a> {
-    // In the interest of being tidy and modular I have introduced too many Somes and dots
-    // Flavour
-    pub name: &'a str,
-    pub description: &'a str,
+	// In the interest of being tidy and modular I have introduced too many Somes and dots
+	// Flavour
+	pub name: &'a str,
+	pub description: &'a str,
 
-    // Universal info
-    pub is_key_item: bool, // If true, this item cannot be removed from the inventory outside of set events
-    pub material: u8,
-    pub equipment_data: Option<EquipmentData>, // If None, it can't be equipped.
+	// Universal info
+	pub is_key_item: bool, // If true, this item cannot be removed from the inventory outside of set events
+	pub material: u8,
+	pub equipment_data: Option<EquipmentData>, // If None, it can't be equipped.
 }
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct EquipmentData {
-    // Requirements
-    pub slot: u8,
-    pub equip_type: u8, // What thing the equipable is
-    pub weight: u8,
-    pub is_cursed: bool,
+	// Requirements
+	pub slot: u8,
+	pub equip_type: u8, // What thing the equipable is
+	pub weight: u8,
+	pub is_cursed: bool,
 
-    pub weapon_data: Option<WeaponData>,
-    pub armour_data: Option<ArmourData>,
+	pub weapon_data: Option<WeaponData>,
+	pub armour_data: Option<ArmourData>,
 }
 
 // Struct defining information about weapon types
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct WeaponData {
-    pub weapon_power: u8,
-    pub spell_mod: u8, // Spellcasting Modifier
-    pub init_mod: u8,
-    pub hit_rate: u8,
-    pub element_override: Option<u8>, // Overrides the element used for the flat attack. If None, bases element on the weapon type
+	pub weapon_power: u8,
+	pub spell_mod: u8, // Spellcasting Modifier
+	pub init_mod: u8,
+	pub hit_rate: u8,
+	pub element_override: Option<u8>, // Overrides the element used for the flat attack. If None, bases element on the weapon type
 }
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct ArmourData {
-    pub ac: u8, // Armour class
-    pub mr: u8, // Magic Resistance
-                //pub reverse_mr: bool // Potential cheat to reverse
+	pub ac: u8, // Armour class
+	pub mr: u8, // Magic Resistance
+	            //pub reverse_mr: bool // Potential cheat to reverse
 }
 
 pub const ITEM_IRON_SWORD: Item = Item {
-    name: "Iron Sword",
-    description:
-        "A metallic shortsword made out of wrought iron. Not particularly difficult to wield.",
+	name: "Iron Sword",
+	description:
+		"A metallic shortsword made out of wrought iron. Not particularly difficult to wield.",
 
-    is_key_item: false,
-    material: MATERIAL_IRON,
-    equipment_data: Some(EquipmentData {
-        slot: EQUIP_WEAPON,
-        equip_type: WEAPON_SWORD,
-        weight: 5,
-        is_cursed: false,
-        weapon_data: Some(WeaponData {
-            weapon_power: 15,
-            spell_mod: 0,
-            init_mod: 0,
-            hit_rate: 95,
-            element_override: None,
-        }),
-        armour_data: None,
-    }),
+	is_key_item: false,
+	material: MATERIAL_IRON,
+	equipment_data: Some(EquipmentData {
+		slot: EQUIP_WEAPON,
+		equip_type: WEAPON_SWORD,
+		weight: 5,
+		is_cursed: false,
+		weapon_data: Some(WeaponData {
+			weapon_power: 15,
+			spell_mod: 0,
+			init_mod: 0,
+			hit_rate: 95,
+			element_override: None,
+		}),
+		armour_data: None,
+	}),
 };

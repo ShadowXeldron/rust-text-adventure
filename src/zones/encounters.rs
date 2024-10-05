@@ -6,17 +6,17 @@ use crate::combat::mobs::*;
 // Basic enemy tables
 
 /*pub const RANDOM_ENCOUNTER_SAMPLE: &[NPC] = &[
-    NPC {
-        name: "pebble", // Not really needed for these but still
-        dialogue: "Suddenly, an aggressive rock with googly eyes shows up and attacks you!",
-        fight_table: Some(ENCTABLE_SINGLE_PEBBLE)
-    },
+	NPC {
+		name: "pebble", // Not really needed for these but still
+		dialogue: "Suddenly, an aggressive rock with googly eyes shows up and attacks you!",
+		fight_table: Some(ENCTABLE_SINGLE_PEBBLE)
+	},
 
-    NPC {
-        name: "goblin", // Not really needed for these but still
-        dialogue: "A goblin sneaks up and attacks you!",
-        fight_table: Some(ENCTABLE_SINGLE_GOBLIN)
-    }
+	NPC {
+		name: "goblin", // Not really needed for these but still
+		dialogue: "A goblin sneaks up and attacks you!",
+		fight_table: Some(ENCTABLE_SINGLE_GOBLIN)
+	}
 ];*/
 
 pub const ENCTABLE_SINGLE_PEBBLE: &[Mob] = &[MOB_PEBBLE];
