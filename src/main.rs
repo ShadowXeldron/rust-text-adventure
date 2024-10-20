@@ -8,12 +8,13 @@ pub use std::str::SplitWhitespace;
 
 // Include files
 pub mod zones;
+use crate::zones::shop::*;
 use crate::zones::*;
 
 pub mod combat;
+use crate::attacks::*;
 pub use crate::combat::mobs::*;
 pub use crate::combat::*;
-use crate::attacks::*;
 
 pub mod dicerolls;
 pub use crate::dicerolls::*;
@@ -33,6 +34,13 @@ pub use crate::heroes::*;
 // Constants
 // Global level cap for characters
 pub const LEVEL_CAP: u8 = 99;
+
+#[derive(Copy, Clone, PartialEq, PartialOrd)]
+pub enum Alignment {
+	Lawful,
+	Neutral,
+	Chaotic,
+}
 
 // Define structs
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
@@ -67,6 +75,7 @@ pub struct GlobalData<'a> {
 	pub coins: u32, // u32 currency value
 	pub players: Vec<Hero<'a>>,
 	pub alignment: i8,
+	pub inventory: Vec<Item<'a>>,
 }
 
 impl GlobalData<'_> {
@@ -92,7 +101,7 @@ impl GlobalData<'_> {
 			self.players[counter].gain_exp(exp)
 		}
 	}
-	
+
 	// Performs the max HP thing for every character
 	// Consider adding a "full restore" function to evergy character
 	fn reset_party_stat_caps(&mut self) {
@@ -109,8 +118,9 @@ impl GlobalData<'_> {
 			);
 		}
 	}
-	
+
 	fn heal_and_reset_party_stat_caps(&mut self) {
+		// This function name is too long and I hate it
 		self.reset_party_stat_caps();
 		for counter in &mut self.players {
 			counter.hp = counter.max_hp;
@@ -121,18 +131,19 @@ impl GlobalData<'_> {
 
 // Actual code begins here
 fn main() {
-	println!("Really basic Rust (was python) text adventure");
-	//println!("\nAsk the player whether they want to load a save");
+	println!("Really basic Rust (was python) text adventure"); // Well, at this point it's more of a full on text-based RPG than a normal interactive fiction game.
+															//println!("\nAsk the player whether they want to load a save");
 
 	// To start with, generate a character
 	print!("Enter player name: ");
 	let binding = input::<String>().get();
 	let player_name: &str = binding.as_str();
-	let player = generate_character(player_name); // Temporary immutability while I test combat mechanics
+	let player = generate_character(player_name);
 	let mut global: GlobalData = GlobalData {
 		coins: 0,
 		players: vec![player],
 		alignment: 0,
+		inventory: vec![], // Start with an empty inventory
 	};
 	global.players.push(Hero {
 		name: "Another Person",
@@ -207,17 +218,6 @@ fn show_stat_row(global: &GlobalData, title: String) {
 	);
 }
 
-// TODO: Spin these off into a seperate file, preferably not as functions
-
-/*fn castle_1f_throne_room() {
-	println!("You stand in the throne room of the royal palace. Upon the throne sits the land's portly ruler, draped in a majestic red cloak and wearing a ruby-encrusted crown of solid gold upon his head.");
-	println!("A distressed-looking royal guard stands near to the king. He is wearing ornately decorated armour and carries a gleaming sword and shield.");
-	println!("At the southern end of the room is a doorway that leads into a hallway that heads to the rest of the castle.");
-
-
-	player_action(vec!["n", "s"], vec!["king", "guard", "queen"])
-}*/
-
 // Text parser. This might also be better off in its own file.
 // Also, it's constantly calling itself which I don't think is particularly good code.
 fn player_action(zone: Zone, mut global: GlobalData) {
@@ -242,13 +242,13 @@ fn player_action(zone: Zone, mut global: GlobalData) {
 			battle_start(global.players, foe.fight_table.unwrap().to_vec());
 		global.players = battle.party;
 		match battle.result_type {
-			BATTLE_RESULT_VICTORY => {
+			ResultType::Victory => {
 				// Successful enemy kills
 				println!("You stand victorious over your assailant. \nThe party gained {} experience points from the battle!\n", MOB_PEBBLE.exp_reward);
 				global.give_party_exp(foe.get_exp_from_encounters())
 			}
 
-			BATTLE_RESULT_FAILURE => {
+			ResultType::Fail => {
 				println!("You have perished upon the field of battle...");
 				//player.hp = 0;
 				// Print "Game Over with ANSI codes"
@@ -256,12 +256,10 @@ fn player_action(zone: Zone, mut global: GlobalData) {
 				return;
 			}
 
-			BATTLE_RESULT_ESCAPE => println!("Successfully ran away from the battle."),
+			ResultType::Escape => println!("Successfully ran away from the battle."),
 			// Subtract a random percentage of money.
 			// println!("You dropped {} coins wile running away")
-			BATTLE_RESULT_TRUCE => println!("The enemy left to go and bother someone else."),
-
-			_ => println!("Suddenly, the enemy stopped existing."),
+			ResultType::Truce => println!("The enemy left to go and bother someone else."),
 		} // Temporary functionality. There should ideally be a way to mark certain battles as "friendly", wherein characters are KO'd rather than killed and as such will not trigger a game over sequence.
 		println!();
 	}
@@ -394,7 +392,46 @@ fn player_action(zone: Zone, mut global: GlobalData) {
 					}
 				}
 
+				"cheat" => {
+					// Actually meant to speed things along while testing.
+					if global.players[0].name == "CHEATER" {
+						println!("You dirty cheater!");
+
+						match noun {
+							"exp"  => global.give_party_exp(u16::MAX), // Gains lots of experience
+							// Cheat shops
+							"shop" => global = SAMPLE_CHEAT_SHOP.open(global), // Opens up a basic shop to test out certain items
+							"shop2" => global = SAMPLE_CHEAT_SHOP2.open(global), // Opens up a basic shop to test out certain items
+							"armoury" => global = SAMPLE_CHEAT_ARMOURY.open(global), // Opens up a basic shop to test out certain items
+							"armoury2" => global = SAMPLE_CHEAT_ARMOURY2.open(global), // Opens up a basic shop to test out certain items
+							_ => println!("{} is not a recognised cheat. Maybe you should, y'know, actually learn how to play the game?", noun)
+						}
+					} else {
+						println!(
+							"{} is not in the cheaters file. This incident will be reported.",
+							global.players[0].name
+						)
+					}
+				}
+
 				"look" => println!("{}", zone.text),
+				"save" => println!("Currently unimplemented."), // In the future this should let you dump the global_data variable and the current Zone (albiet with a temporary encounter rate of 0) to a file, but I'd rather make it work as just a suspend save so you can turn the computer off to go do something else.
+				"load" => println!("Currently unimplemented."), // Self explanatory.
+				"hunt" => {
+					if zone.random_encounters.is_some() {
+						println!("You searched the surrounding area for enemies.");
+						// Stupid placeholder behaviour
+						let tempzone = Zone {
+							encounter_rate: 255, // Force an encounter
+							..zone
+						};
+						player_action(tempzone, global);
+						break;
+					} else {
+						println!("There aren't any enemies here.")
+					}
+				}
+				"attack" | "fight" | "kill" => println!("Currently unimplemented."), // Should allow you to force a battle against an NPC.
 
 				"clear" => clear().expect("Couldn't clear screen"),
 
@@ -405,7 +442,7 @@ List of commands:
     go - Move to a connected area. You can go Up, Down, North, East, South or West
     talk - Chat with an NPC
     take - Add an item to your inventory
-
+	hunt - Force a random encounter
     info - Print information about the party
     help - Shows this text
                 "
@@ -460,6 +497,8 @@ fn get_title(align: i8, level: u8) -> String {
 		title = "Paragon"
 	} else if align > -120 {
 		title = "Renegade"
+	} else if level == 99 {
+		title = "Supreme Legendary Adventurer" // 99 is the level cap
 	} else {
 		title = "Traveler"
 	}

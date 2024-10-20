@@ -9,56 +9,18 @@ use crate::*;
 use read_input::shortcut::input;
 use std::cmp::Reverse;
 
-// These are probably redundant but I've included them to make modification easier.
-
-pub const BATTLE_RESULT_VICTORY: u8 = 0; // Battle victory on account of every character being defeated
-pub const BATTLE_RESULT_FAILURE: u8 = 1; // Total party kill. This is considered a fail state.
-pub const BATTLE_RESULT_ESCAPE: u8 = 2; // Battle canceled by player escaping
-pub const BATTLE_RESULT_TRUCE: u8 = 3; // Peaceful resolution from negotiation
-
-/*
-// Weapon type constants, for later
-
-const WEAPON_NONE: u8 = 0;
-// Slash
-const WEAPON_SWORD: u8 = 1;
-const WEAPON_GREATSWORD: u8 = 2;
-const WEAPON_AXE: u8 = 3;
-const WEAPON_GREATAXE: u8 = 4;
-// Pierce
-const WEAPON_SPEAR: u8 = 5;
-const WEAPON_POLEARM: u8 = 6;
-const WEAPON_BOW: u8 = 8;
-// Impact
-const WEAPON_CLUB: u8 = 9;
-const WEAPON_HAMMER: u8 = 10;
-const WEAPON_STAFF: u8 = 11;
-// Unique
-const WEAPON_WAND: u8 = 12;
-const WEAPON_KNIFE: u8 = 13;*/
-
-// Array for checking weapon damage types, although for autogen knives will do slash or pierce damage depending on what's more effective
-const WEAPON_DAMAGE_TYPES: [Element; 13] = [
-	Element::Neutral, /* Barehand */
-	Element::Slash,   /* Sword */
-	Element::Slash,   /* Greatsword */
-	Element::Slash,   /* Axe */
-	Element::Slash,   /* Greataxe */
-	Element::Pierce,  /* Spear */
-	Element::Pierce,  /* Polearm */
-	Element::Pierce,  /* Bow */
-	Element::Impact,  /* Club */
-	Element::Impact,  /* Hammer */
-	Element::Impact,  /* Staff */
-	Element::Neutral, /* Wand */
-	Element::Pierce,  /* Knife */
-];
-
 // I previously used this constant array of string names for the elements before reworking the elements into an enum
 // const ELEMENT_NAMES: &[&str] = &["Neutral", "Slash", "Pierce", "Impact", "Fire", "Ice", "Electric", "Wind", "Ground", "Dark", "Light",];
 
+pub enum ResultType {
+	Victory, // Battle victory on account of every character being defeated
+	Fail,    // Total party kill. This is considered a fail state.
+	Escape,  // Battle canceled by player escaping
+	Truce,   // Peaceful resolution from negotiation
+}
+
 pub struct BattleResult<'a> {
-	pub result_type: u8,
+	pub result_type: ResultType,
 	pub party: Vec<Hero<'a>>,
 }
 
@@ -143,7 +105,7 @@ pub fn battle_start<'a>(mut players: Vec<Hero<'a>>, mut baddies: Vec<Mob>) -> Ba
 					if start_negotiation(players[0], baddies[0]) {
 						println!("Negotiation was successful!");
 						return BattleResult {
-							result_type: BATTLE_RESULT_TRUCE,
+							result_type: ResultType::Truce,
 							party: players,
 						};
 					} else {
@@ -155,10 +117,10 @@ pub fn battle_start<'a>(mut players: Vec<Hero<'a>>, mut baddies: Vec<Mob>) -> Ba
 				3 => {
 					println!("Your team attempted to get away...");
 
-					if do_saving_throw(players[0].stats.dexterity, 20, ROLL_DISADVANTAGE) {
+					if do_saving_throw(players[0].stats.dexterity, 20, RollType::Disadvantage) {
 						println!("...and did!");
 						return BattleResult {
-							result_type: BATTLE_RESULT_ESCAPE,
+							result_type: ResultType::Escape,
 							party: players,
 						};
 					} else {
@@ -446,14 +408,14 @@ pub fn battle_start<'a>(mut players: Vec<Hero<'a>>, mut baddies: Vec<Mob>) -> Ba
 
 	// If the loop breaks, check for hit points. If the enemy team was annihlated, return 0 to signal a victory. But if the player team was defeated, return 1 to signal a loss.
 	let mut result: BattleResult = BattleResult {
-		result_type: BATTLE_RESULT_VICTORY,
+		result_type: ResultType::Victory,
 		party: players,
 	};
 
 	if is_enemy_side_beaten(&baddies) {
-		result.result_type = BATTLE_RESULT_VICTORY
+		result.result_type = ResultType::Victory
 	} else {
-		result.result_type = BATTLE_RESULT_FAILURE
+		result.result_type = ResultType::Fail
 	}
 
 	result
@@ -480,10 +442,14 @@ fn do_accuracy_check(
 	};
 
 	// Account for avoided elements
-	if avoid_elements.is_some() && avoid_elements.expect("Invalid avoid element").contains(&attack.element) {
+	if avoid_elements.is_some()
+		&& avoid_elements
+			.expect("Invalid avoid element")
+			.contains(&attack.element)
+	{
 		println!("This target always avoids {}", attack.element.get_element_name());
-		return false
-    }
+		return false;
+	}
 
 	// Otherwise, calculate hit rate
 
@@ -558,10 +524,7 @@ fn calculate_damage(
 			.expect("Invalid weakness element")
 			.contains(&attack.element)
 	{
-		println!(
-			"{} is super effective against this target!",
-			attack.element.get_element_name()
-		);
+		println!("{} is super effective against this target!", attack.element.get_element_name());
 		damage *= 2;
 	} else if target_elements.resist.is_some()
 		&& target_elements
@@ -598,7 +561,7 @@ fn generate_weapon_attack(weapon: Option<Item>) -> Option<Attack> {
 			desc: "Attack automatically generated from your equipped weapon",
 			cost: 0,
 			category: AttackCategory::Physical,
-			element: WEAPON_DAMAGE_TYPES[usize::from(unwrapped_data.equip_type)],
+			element: unwrapped_data.get_weapon_element(),
 			power: 1,
 			hit_rate: unwrapped_data.weapon_data.unwrap().hit_rate,
 			target: TargetClass::Foe,
@@ -632,20 +595,20 @@ fn start_negotiation(hero: Hero, mob: Mob) -> bool {
 			println!("You tried to persuade the enemy to stop fighting. \n");
 
 			if mob.hp == mob.max_hp {
-				if do_saving_throw(hero.stats.intelligence, 15, ROLL_DISADVANTAGE) {
+				if do_saving_throw(hero.stats.intelligence, 15, RollType::Disadvantage) {
 					println!("\"Actually, you know what? I can't actually be bothered fighting you today.\"");
 					return true;
 				} else {
 					println!("\nHa ha, NO!\n");
 				}
 			} else if mob.hp < 11 {
-				if do_saving_throw(hero.stats.intelligence, 5, ROLL_ADVANTAGE) {
+				if do_saving_throw(hero.stats.intelligence, 5, RollType::Advantage) {
 					println!("\"Y-you're sparing me? Thank the heavens!\"");
 					return true;
 				} else {
 					println!("\"I'll fight to the bitter end...\"")
 				}
-			} else if do_saving_throw(hero.stats.intelligence, 10, ROLL_NORMAL) {
+			} else if do_saving_throw(hero.stats.intelligence, 10, RollType::Normal) {
 				println!("\"...fine.\"");
 				return true;
 			} else {
@@ -657,20 +620,20 @@ fn start_negotiation(hero: Hero, mob: Mob) -> bool {
 			println!("You sheathed your weapon and showed the target mercy. \n");
 
 			if mob.hp == mob.max_hp {
-				if do_saving_throw(hero.stats.spirit, 15, ROLL_DISADVANTAGE) {
+				if do_saving_throw(hero.stats.spirit, 15, RollType::Disadvantage) {
 					println!("\"Actually, you know what? I can't actually be bothered fighting you today.\"");
 					return true;
 				} else {
 					println!("\nYou fool!\n")
 				}
 			} else if mob.hp < 11 {
-				if do_saving_throw(hero.stats.spirit, 5, ROLL_ADVANTAGE) {
+				if do_saving_throw(hero.stats.spirit, 5, RollType::Advantage) {
 					println!("\"O-o-okay!\"");
 					return true;
 				} else {
 					println!("\"Just finish me off, you coward...\"")
 				}
-			} else if do_saving_throw(hero.stats.spirit, 10, ROLL_NORMAL) {
+			} else if do_saving_throw(hero.stats.spirit, 10, RollType::Normal) {
 				println!("\"I'm going home.\"");
 				return true;
 			} else {
@@ -682,20 +645,20 @@ fn start_negotiation(hero: Hero, mob: Mob) -> bool {
 			println!("You pressed your weapon against the target's throat. \n");
 
 			if mob.hp == mob.max_hp {
-				if do_saving_throw(hero.stats.strength, 15, ROLL_DISADVANTAGE) {
+				if do_saving_throw(hero.stats.strength, 15, RollType::Disadvantage) {
 					println!("\"AAAAAAAAAAAH!!!!!!\"\nThey ran away!");
 					return true;
 				} else {
 					println!("\nHow dare you!\n");
 				}
 			} else if mob.hp < 11 {
-				if do_saving_throw(hero.stats.spirit, 5, ROLL_ADVANTAGE) {
+				if do_saving_throw(hero.stats.spirit, 5, RollType::Advantage) {
 					println!("\"AAAAAAAAAAAH!!!!!!\"\nThey ran away!");
 					return true;
 				} else {
 					println!("\"Just finish me off, you coward...\"")
 				}
-			} else if do_saving_throw(hero.stats.spirit, 10, ROLL_NORMAL) {
+			} else if do_saving_throw(hero.stats.spirit, 10, RollType::Normal) {
 				println!("\"AAAAAAAAAAAH!!!!!!\"\nThey ran away!");
 				return true;
 			} else {

@@ -5,6 +5,11 @@ use crate::{ElementalEffects, Stats, LEVEL_CAP};
 
 use crate::input;
 
+#[derive(Copy, Clone, PartialEq, PartialOrd)]
+pub enum Proficiency {
+	None,
+}
+
 // Hero definition. Included to make Clippy shut up.
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct Hero<'a> {
@@ -60,14 +65,14 @@ impl<'a> Hero<'a> {
 			// Prompt to increase a stat
 			loop {
 				println!(
+					// Manually justified the following lines so they appear evenly matched, allowing for easier judging of stats. Does not account for numbers with more than one digit though.
 					"Coose a stat to increase:
-                1) STRENGTH - {} - [{}]
-                2) DEXTERITY - {} - [{}]
+                1)     STRENGTH - {} - [{}]
+                2)    DEXTERITY - {} - [{}]
                 3) CONSTITUTION - {} - [{}]
                 4) INTELLIGENCE - {} - [{}]
-                5) SPIRIT - {} - [{}]
+                5)       SPIRIT - {} - [{}]
                 ",
-					// Due to how line ends work in Rust, I can do this for the sake of readability
 					self.stats.strength,
 					"*".repeat(usize::from(self.stats.strength)),
 					self.stats.dexterity,
@@ -157,34 +162,34 @@ pub struct Equipment<'a> {
 impl<'a> Equipment<'a> {
 	pub fn equip_item(&mut self, item: Item<'a>) {
 		// Decide item slot based on the item passed in
-		let slot: u8 = item.equipment_data.unwrap().slot;
+		let slot: EquipSlot = item.equipment_data.unwrap().slot;
 
-		match slot { // Equip the item in the necessary slot
-            EQUIP_HEAD => self.head = Some(item),
-            EQUIP_ARMOUR => self.armour = Some(item),
-            EQUIP_LEGS => self.legs = Some(item),
-            EQUIP_ACCESSORY => self.accessory = Some(item),
-            EQUIP_OFFHAND => self.offhand = Some(item),
-            EQUIP_WEAPON => self.weapon = Some(item), // Temporary functionality to account for dual wielding
-            6_u8..=u8::MAX => panic!("Invalid equipment type! It must be one of the following:\n - EQUIP_HEAD\n - EQUIP_ARMOUR\n - EQUIP_LEGS\n - EQUIP_ACCESSORY\n - EQUIP_OFFHAND\n - EQUIP_WEAPON")
-        }
+		match slot {
+			// Equip the item in the necessary slot
+			EquipSlot::Head => self.head = Some(item),
+			EquipSlot::Armour => self.armour = Some(item),
+			EquipSlot::Legs => self.legs = Some(item),
+			EquipSlot::Accessory => self.accessory = Some(item),
+			EquipSlot::Offhand => self.offhand = Some(item),
+			EquipSlot::Weapon => self.weapon = Some(item), // Temporary functionality to account for dual wielding
+		}
 
 		println!("Equipped {}", item.name) // TODO: Add an to check names
 		                             // Should also remove the item from your inventory if it's in there
 	}
 
-	pub fn unequip_item(&mut self, slot: u8) {
+	pub fn unequip_item(&mut self, slot: EquipSlot) {
 		// Can be called manually.
-		match slot{ // Equip the item in the necessary slot
-            EQUIP_HEAD => self.head = None,
-            EQUIP_ARMOUR => self.armour = None,
-            EQUIP_LEGS => self.legs = None,
-            EQUIP_ACCESSORY => self.accessory = None,
-            EQUIP_OFFHAND => self.offhand = None,
-            EQUIP_WEAPON => self.weapon = None,
-            6_u8..=u8::MAX => panic!("Invalid equipment type! It must be one of the following:\n - EQUIP_HEAD\n - EQUIP_ARMOUR\n - EQUIP_LEGS\n - EQUIP_ACCESSORY\n - EQUIP_OFFHAND\n - EQUIP_WEAPON")
-        // Should also add the item to your inventory
-        }
+		match slot {
+			// Equip the item in the necessary slot
+			EquipSlot::Head => self.head = None,
+			EquipSlot::Armour => self.armour = None,
+			EquipSlot::Legs => self.legs = None,
+			EquipSlot::Accessory => self.accessory = None,
+			EquipSlot::Offhand => self.offhand = None,
+			EquipSlot::Weapon => self.weapon = None,
+			// Should also add the item to your inventory.
+		}
 	}
 
 	pub fn get_total_ac(&self) -> u8 {

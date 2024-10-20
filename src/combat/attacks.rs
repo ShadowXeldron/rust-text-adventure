@@ -8,14 +8,14 @@ pub enum AttackCategory {
 	Support,
 	StatusEffect,
 	Instakill,
-	Field
+	Field,
 }
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub enum TargetClass {
 	Foe,
 	Ally,
-	User
+	User,
 }
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
@@ -29,10 +29,10 @@ pub enum Element {
 	Fire,
 	Ice,
 	Electric,
-	Air, // Or Wind
+	Air,   // Or Wind
 	Earth, // Or Ground
 	Dark,
-	Light
+	Light,
 }
 
 impl Element {
@@ -49,19 +49,19 @@ impl Element {
 			Element::Air => "Air",
 			Element::Earth => "Earth",
 			Element::Dark => "Dark",
-			Element::Light => "Light"
+			Element::Light => "Light",
 		}
 	}
 }
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct Attack<'a> {
-	pub name: &'a str, // Brief name used for the attack
-	pub desc: &'a str, // Description of the attack
-	pub cost: u16,     // MP cost of the attack
-	pub category: AttackCategory,  // Whether the attack is Physical, Magical or Status.
-	pub element: Element,   // Elemental type of the attack, used in damage calculation
-	pub power: u8,     // Base power of the attack
+	pub name: &'a str,            // Brief name used for the attack
+	pub desc: &'a str,            // Description of the attack
+	pub cost: u16,                // MP cost of the attack
+	pub category: AttackCategory, // Whether the attack is Physical, Magical or Status.
+	pub element: Element,         // Elemental type of the attack, used in damage calculation
+	pub power: u8,                // Base power of the attack
 	pub hit_rate: u8, // Value up to 100 that affects how likely the attack is to connect. Numbers higher than 100 will ignore accuracy checks to always hit
 	pub target: TargetClass,
 }
