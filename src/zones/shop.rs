@@ -77,7 +77,7 @@ impl Shop<'_> {
 						ShopType::Armoury => println!("Open the item menu and ask the player to select which damaged item from their inventory they would like to have fixed."),
 						ShopType::Chapel => println!("Ask who wants to get their status effects cured"),
 						ShopType::Infirmary => println!("Ask who wants to get their status effects cured"),
-						ShopType::Tavern => println!("Bring up a list of all your recruited teammates.")
+						ShopType::Tavern => println!("Bring up a character creation prompt.")
 					}
 				}
 				
@@ -85,7 +85,7 @@ impl Shop<'_> {
 				3 => {
 					// Match probably won't work here because we need to be more specific
 					if self.shop_type == ShopType::Chapel {println!("Ask for a donation that will tip you towards the chapel's alignment")}
-					else if self.shop_type == ShopType::Infirmary && self.inventory.is_some() {println!("Open the shopping menu")}
+					else if self.shop_type != ShopType::GeneralStore && self.shop_type != ShopType::Armoury && self.inventory.is_some() {println!("Open the shopping menu")}
 					else {println!("\"{}\"", self.talk_text)} // Print the shopkeeper dialogue
 				}
 				
@@ -93,7 +93,7 @@ impl Shop<'_> {
 					// This marks the first area when you can actively leave the shop
 					if self.shop_type == ShopType::Chapel && self.inventory.is_some() {println!("Open the shopping menu")}
 					else if option_count > 4 {
-							if self.inventory.is_none() && self.shop_type == ShopType::Chapel {println!("\"{}\"", self.talk_text)}
+							if (self.inventory.is_none() && self.shop_type == ShopType::Chapel) || (self.inventory.is_some() && (self.shop_type == ShopType::Infirmary || self.shop_type == ShopType::Tavern)) {println!("\"{}\"", self.talk_text)}
 							else {println!("Pull up a list of NPCs")}
 						} // Watch this fail dramatically, in dramatic fashion. Should print shopkeeper dialogue.
 					else {break}
@@ -113,7 +113,7 @@ impl Shop<'_> {
 					else {break}
 				}
 				
-				7 => break, // This SHOULD be it. Excess values being able to trigger an exit is not an intentional feature, but I've deemed it to be harmless and prob ably faster than doing even more checks so I've left it in.
+				7 => break, // This SHOULD be it. Excess values being able to trigger an exit is not an intentional feature, but I've deemed it to be harmless and probably faster than doing even more checks so I've left it in.
 				// AAAH THIS CODE STINKS 
 			
 				_ => println!("Invalid option!")
