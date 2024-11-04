@@ -5,7 +5,7 @@ use crate::Mob;
 mod encounters;
 use crate::zones::encounters::*;
 pub mod shop;
-use crate::zones::shop::*;
+//use crate::zones::shop::*;
 
 #[derive(Copy, Clone)]
 pub struct Zone<'a> {

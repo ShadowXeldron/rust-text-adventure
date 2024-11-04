@@ -11,9 +11,9 @@ pub struct Shop<'a> {
 	pub npcs: Option<&'a [NPC<'a>]>, // Other NPCs in the shop. Mainly reserved for taverns and some of the chapels and adds another menu.
 }
 
-impl Shop<'_> {
+impl<'a> Shop<'a> {
 	// Trade is the basis of capitalism. Capitalism is the basis of greed. Greed is the basis of the human nature.
-	pub fn open<'a>(&self, mut global: GlobalData<'a>) -> GlobalData<'a> {
+	pub fn open(&self, mut global: GlobalData<'a>) -> GlobalData<'a> {
 		println!("\n{}\n\"{}\"", self.name, self.entry_text);
 		let mut option_count: u8 = 2;
 
@@ -64,7 +64,7 @@ impl Shop<'_> {
 			match option {
 				1 => {
 					match self.shop_type {
-						ShopType::GeneralStore | ShopType::Armoury => println!("Open the shopping menu"),
+						ShopType::GeneralStore | ShopType::Armoury => global = self.open_purchase_menu(global),
 						ShopType::Chapel => println!("Ask who wants to get revived"),
 						ShopType::Infirmary => println!("Ask who wants to get healed"),
 						ShopType::Tavern => println!("Bring up a list of all your recruited teammates.")
@@ -85,13 +85,13 @@ impl Shop<'_> {
 				3 => {
 					// Match probably won't work here because we need to be more specific
 					if self.shop_type == ShopType::Chapel {println!("Ask for a donation that will tip you towards the chapel's alignment")}
-					else if self.shop_type != ShopType::GeneralStore && self.shop_type != ShopType::Armoury && self.inventory.is_some() {println!("Open the shopping menu")}
+					else if self.shop_type != ShopType::GeneralStore && self.shop_type != ShopType::Armoury && self.inventory.is_some() {global = self.open_purchase_menu(global)}
 					else {println!("\"{}\"", self.talk_text)} // Print the shopkeeper dialogue
 				}
 				
 				4 => {
 					// This marks the first area when you can actively leave the shop
-					if self.shop_type == ShopType::Chapel && self.inventory.is_some() {println!("Open the shopping menu")}
+					if self.shop_type == ShopType::Chapel && self.inventory.is_some() {global = self.open_purchase_menu(global)}
 					else if option_count > 4 {
 							if (self.inventory.is_none() && self.shop_type == ShopType::Chapel) || (self.inventory.is_some() && (self.shop_type == ShopType::Infirmary || self.shop_type == ShopType::Tavern)) {println!("\"{}\"", self.talk_text)}
 							else {println!("Pull up a list of NPCs")}
@@ -122,6 +122,30 @@ impl Shop<'_> {
 
 		println!("You left the shop.");
 		global // Returns the inserted global. It's kind of a misnomer because it's less global data, moreso hot potato.
+	}
+	
+	fn open_purchase_menu(&self, mut global: GlobalData<'a>) -> GlobalData<'a> {
+		let inv = self.inventory.unwrap();
+		loop {
+			println!("Here's what we have in stock:");
+			for counter in 0..self.inventory.unwrap().len() {
+				println!("{} - {}", counter + 1, inv[counter].name)
+			}
+			println!("Choose an option:");
+			let option: usize = input::<usize>().get();
+			
+			if option > 0 && option < inv.len() + 2 {
+				// Print info about the item
+				println!("{}", inv[option - 1].name);
+				global.add_item_to_inventory(inv[option - 1]);
+				break
+			}
+			
+			else {
+				println!("Invalid option!")
+			}
+		}
+		global
 	}
 }
 

@@ -78,7 +78,7 @@ pub struct GlobalData<'a> {
 	pub inventory: Vec<Item<'a>>,
 }
 
-impl GlobalData<'_> {
+impl<'a> GlobalData<'a> {
 	fn is_party_wiped(&self) -> bool // Returns true if every player is dead. Otherwise, returns false.
 	{
 		// fallback
@@ -126,6 +126,10 @@ impl GlobalData<'_> {
 			counter.hp = counter.max_hp;
 			counter.mp = counter.max_mp;
 		}
+	}
+	
+	fn add_item_to_inventory(&mut self, item: Item<'a>) {
+		self.inventory.push(item);
 	}
 }
 
@@ -360,6 +364,27 @@ fn player_action(zone: Zone, mut global: GlobalData) {
 				"info" => {
 					show_stat_row(&global, get_title(0, global.players[0].stats.level));
 					println!("You are {}", get_alignment(0))
+				}
+				
+				"list" => {
+					for counter in 0..global.inventory.len() {
+						println!("{} - {}", counter + 1, global.inventory[counter].name)
+					}
+					/*if noun.is_empty() {println!("List what? You can list heroes or inventory.")}
+					else {
+						match verb {
+							"items" | "item" | "inventory" => {
+								for counter in 0..global.inventory.len() {
+									println!("{} - {}", counter + 1, global.inventory[counter].name)
+								}
+							},
+							"heroes" | "hero" | "players" | "player" | "party" => {
+								for counter in 0..global.players.len() {
+									println!("{} - {}", counter + 1, global.players[counter].name)
+								}
+							},
+							_ => println!("You can't list that!")
+					}*/
 				}
 
 				"take" | "get" => {
