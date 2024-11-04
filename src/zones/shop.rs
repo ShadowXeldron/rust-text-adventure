@@ -75,8 +75,8 @@ impl Shop<'_> {
 					match self.shop_type {
 						ShopType::GeneralStore => println!("Open the selling menu"),
 						ShopType::Armoury => println!("Open the item menu and ask the player to select which damaged item from their inventory they would like to have fixed."),
-						ShopType::Chapel => println!("Ask who wants to get revived"),
-						ShopType::Infirmary => println!("Ask who wants to get healed"),
+						ShopType::Chapel => println!("Ask who wants to get their status effects cured"),
+						ShopType::Infirmary => println!("Ask who wants to get their status effects cured"),
 						ShopType::Tavern => println!("Bring up a list of all your recruited teammates.")
 					}
 				}
@@ -85,6 +85,7 @@ impl Shop<'_> {
 				3 => {
 					// Match probably won't work here because we need to be more specific
 					if self.shop_type == ShopType::Chapel {println!("Ask for a donation that will tip you towards the chapel's alignment")}
+					else if self.shop_type == ShopType::Infirmary && self.inventory.is_some() {println!("Open the shopping menu")}
 					else {println!("\"{}\"", self.talk_text)} // Print the shopkeeper dialogue
 				}
 				
@@ -92,18 +93,28 @@ impl Shop<'_> {
 					// This marks the first area when you can actively leave the shop
 					if self.shop_type == ShopType::Chapel && self.inventory.is_some() {println!("Open the shopping menu")}
 					else if option_count > 4 {
-						if self.shop_type != ShopType::Chapel {println!("Pull up a list of NPCs")}
-						else {println!("\"{}\"", self.talk_text)}
-					} // Watch this fail dramatically, in dramatic fashion. Should print shopkeeper dialogue.
+							if self.inventory.is_none() && self.shop_type == ShopType::Chapel {println!("\"{}\"", self.talk_text)}
+							else {println!("Pull up a list of NPCs")}
+						} // Watch this fail dramatically, in dramatic fashion. Should print shopkeeper dialogue.
 					else {break}
 				}
 				
 				5 => {
-					// This marks the first area when you can actively leave the shop
-					if self.shop_type == ShopType::Chapel && self.npcs.is_some() {println!("Pull up a list of NPCs")}
+					if option_count > 5 && (self.shop_type != ShopType::GeneralStore || self.shop_type != ShopType::Armoury) {
+						if self.inventory.is_some() && self.shop_type == ShopType::Chapel {println!("\"{}\"", self.talk_text)}
+						else {println!("Pull up a list of NPCs")}
+					}
 					else {break}
 				}
-				// AAAH THIS CODE STINKS
+				
+				6 => {
+					// This marks the first area when you can actively leave the shop
+					if option_count > 5 && self.shop_type == ShopType::Chapel && self.npcs.is_some() && self.inventory.is_some() {println!("Pull up a list of NPCs")}
+					else {break}
+				}
+				
+				7 => break, // This SHOULD be it. Excess values being able to trigger an exit is not an intentional feature, but I've deemed it to be harmless and prob ably faster than doing even more checks so I've left it in.
+				// AAAH THIS CODE STINKS 
 			
 				_ => println!("Invalid option!")
 			}
@@ -286,7 +297,7 @@ pub const SAMPLE_CHEAT_INFIRMARY4: Shop = Shop {
 
 pub const SAMPLE_CHEAT_TAVERN: Shop = Shop {
 	name: "Cheat Tavern",
-	entry_text: "Welcome to the cheat infirmary. We heal your health while you hurt other people's feelings.",
+	entry_text: "Welcome to the cheat tavern! Need a drink?",
 	talk_text: "Implementing multiple character support in this game was a nightmare.",
 	shop_type: ShopType::Tavern,
 	inventory: None,

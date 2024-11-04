@@ -400,10 +400,22 @@ fn player_action(zone: Zone, mut global: GlobalData) {
 						match noun {
 							"exp"  => global.give_party_exp(u16::MAX), // Gains lots of experience
 							// Cheat shops
-							"shop" => global = SAMPLE_CHEAT_SHOP.open(global), // Opens up a basic shop to test out certain items
-							"shop2" => global = SAMPLE_CHEAT_SHOP2.open(global), // Opens up a basic shop to test out certain items
-							"armoury" => global = SAMPLE_CHEAT_ARMOURY.open(global), // Opens up a basic shop to test out certain items
-							"armoury2" => global = SAMPLE_CHEAT_ARMOURY2.open(global), // Opens up a basic shop to test out certain items
+							"shop" => global = SAMPLE_CHEAT_SHOP.open(global),
+							"shop2" => global = SAMPLE_CHEAT_SHOP2.open(global),
+							"armoury" => global = SAMPLE_CHEAT_ARMOURY.open(global),
+							"armoury2" => global = SAMPLE_CHEAT_ARMOURY2.open(global),
+							"chapel" => global = SAMPLE_CHEAT_CHAPEL_LAW.open(global),
+							"chapel2" => global = SAMPLE_CHEAT_CHAPEL_LAW2.open(global),
+							"chapel3" => global = SAMPLE_CHEAT_CHAPEL_NEUTRAL.open(global),
+							"chapel4" => global = SAMPLE_CHEAT_CHAPEL_CHAOS.open(global),
+							"tavern" => global = SAMPLE_CHEAT_TAVERN.open(global),
+							"tavern2" => global = SAMPLE_CHEAT_TAVERN2.open(global),
+							"tavern3" => global = SAMPLE_CHEAT_TAVERN3.open(global),
+							"tavern4" => global = SAMPLE_CHEAT_TAVERN4.open(global),
+							"infirmary" => global = SAMPLE_CHEAT_INFIRMARY.open(global),
+							"infirmary2" => global = SAMPLE_CHEAT_INFIRMARY2.open(global),
+							"infirmary3" => global = SAMPLE_CHEAT_INFIRMARY3.open(global),
+							"infirmary4" => global = SAMPLE_CHEAT_INFIRMARY4.open(global),
 							_ => println!("{} is not a recognised cheat. Maybe you should, y'know, actually learn how to play the game?", noun)
 						}
 					} else {
