@@ -117,7 +117,7 @@ pub fn battle_start<'a>(mut players: Vec<Hero<'a>>, mut baddies: Vec<Mob>) -> Ba
 				3 => {
 					println!("Your team attempted to get away...");
 
-					if do_saving_throw(players[0].stats.dexterity, 20, RollType::Disadvantage) {
+					if do_saving_throw(players[0].stats.dexterity, 15, RollType::Disadvantage) {
 						println!("...and did!");
 						return BattleResult {
 							result_type: ResultType::Escape,

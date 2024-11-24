@@ -73,7 +73,7 @@ impl<'a> Shop<'a> {
 				
 				2 => {
 					match self.shop_type {
-						ShopType::GeneralStore => println!("Open the selling menu"),
+						ShopType::GeneralStore => global = self.open_sell_menu(global),
 						ShopType::Armoury => println!("Open the item menu and ask the player to select which damaged item from their inventory they would like to have fixed."),
 						ShopType::Chapel => println!("Ask who wants to get their status effects cured"),
 						ShopType::Infirmary => println!("Ask who wants to get their status effects cured"),
@@ -137,14 +137,56 @@ impl<'a> Shop<'a> {
 			if option > 0 && option < inv.len() + 2 {
 				// Print info about the item
 				println!("{}", inv[option - 1].name);
+				println!("{}", inv[option - 1].description);
 				global.add_item_to_inventory(inv[option - 1]);
-				break
+				break // Should have a prompt here
 			}
 			
 			else {
 				println!("Invalid option!")
 			}
 		}
+		global
+	}
+	
+	fn open_sell_menu(&self, mut global: GlobalData<'a>) -> GlobalData<'a> {
+		// This should increment your coin total by half of the sold item's value. General stores have some insane profit margins. 
+		// Note that item values haven't been programmed in yet
+		loop {
+			if global.inventory.len() == 0 {
+				println!("You have nothing to sell.");
+				break;
+			}
+			
+			println!("Here's what you've got:");
+			for counter in 0..global.inventory.len() {
+				println!("{} - {}", counter + 1, global.inventory[counter].name)
+			}
+			println!("Choose an option:");
+			let option: usize = input::<usize>().get();
+			
+			if option > 0 && option < global.inventory.len() + 2 {
+				// Print info about the item
+				println!("{}", global.inventory[option - 1].name);
+				println!("{}", global.inventory[option - 1].description);
+				// Ask for confirmation before selling
+				if global.inventory[option - 1].is_key_item == true {println!("I can't buy that!")}
+				else {
+					println!("I will give you {} coins for this item.\nAre you sure you want to sell it? (y/n)", global.inventory[option - 1].value / 2);
+					if input::<String>().get() == "y" {
+						println!("Sold the {} for {}.", global.inventory[option - 1].name, global.inventory[option - 1].value);
+						global.coins += global.inventory[option - 1].value;
+						global.inventory.remove(option - 1);
+						break // Should have a prompt here
+					}
+				}
+			}
+			
+			else {
+				println!("Invalid option!")
+			}
+		}
+		
 		global
 	}
 }

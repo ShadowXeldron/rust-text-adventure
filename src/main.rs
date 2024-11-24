@@ -72,10 +72,28 @@ pub struct ElementalEffects<'a> {
 
 // Fake globals implementation so that I don't have to use unsafe
 pub struct GlobalData<'a> {
-	pub coins: u32, // u32 currency value
-	pub players: Vec<Hero<'a>>,
-	pub alignment: i8,
-	pub inventory: Vec<Item<'a>>,
+	coins: u32, // u32 currency value
+	players: Vec<Hero<'a>>,
+	alignment: i8,
+	inventory: Vec<Item<'a>>,
+}
+
+// In game time for the day-night cycle
+struct Time {
+	hours: u8,
+	minutes: u8
+}
+
+impl Time {
+    fn get_time_of_day_string(&self) -> &str {
+		match self.hours {
+			0 => "Midnight",
+			1..=3 => "Late Night",
+			4..=6 => "Dawn",
+			7..=11 => "Morning",
+			_ => "TEMPORAL DISTORTION" // silly fallback value
+		}
+	}
 }
 
 impl<'a> GlobalData<'a> {
@@ -130,6 +148,18 @@ impl<'a> GlobalData<'a> {
 	
 	fn add_item_to_inventory(&mut self, item: Item<'a>) {
 		self.inventory.push(item);
+	}
+	
+	// Intended for instances where the game needs to check for and remove a specific item
+	// Returns true if the item is successfully removed
+	fn remove_item_from_inventory(&mut self, item: Item<'a>) -> bool {
+		for counter in 0..self.inventory.len() {
+			if self.inventory[counter] == item {
+				self.inventory.remove(counter);
+				return true
+			}
+		}
+		false
 	}
 }
 
@@ -260,9 +290,17 @@ fn player_action(zone: Zone, mut global: GlobalData) {
 				return;
 			}
 
-			ResultType::Escape => println!("Successfully ran away from the battle."),
-			// Subtract a random percentage of money.
-			// println!("You dropped {} coins wile running away")
+			ResultType::Escape => {
+				println!("Successfully ran away from the battle.");
+				//Subtract a random percentage of money.
+				
+				if global.coins != 0 {
+					let mut coin_drop = rand::thread_rng().gen_range(1..100);
+					if coin_drop > global.coins {coin_drop = global.coins}
+					global.coins -= coin_drop;
+					println!("You dropped {} coins while running away", coin_drop);
+				}
+			}
 			ResultType::Truce => println!("The enemy left to go and bother someone else."),
 		} // Temporary functionality. There should ideally be a way to mark certain battles as "friendly", wherein characters are KO'd rather than killed and as such will not trigger a game over sequence.
 		println!();
@@ -363,7 +401,8 @@ fn player_action(zone: Zone, mut global: GlobalData) {
 
 				"info" => {
 					show_stat_row(&global, get_title(0, global.players[0].stats.level));
-					println!("You are {}", get_alignment(0))
+					println!("You are {}", get_alignment(global.alignment));
+					println!("You have {} gold coins", global.coins);
 				}
 				
 				"list" => {

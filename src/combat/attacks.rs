@@ -18,6 +18,52 @@ pub enum TargetClass {
 	User,
 }
 
+// Secondary effects of attacks
+pub enum MoveEffect {
+	// Harmful-to-target effects
+	Critical(u8), // u8% chance to deal 1.5x damage
+	InflictNVStatus(NonVolatileStatus, u8), // Percentage chance to inflict the target with the set non-volatile status effect. You can only be afflicted with one NV status effect at a time.
+	InflictVStatus(VolatileStatus, u8), // Percentage chance to inflict the target with the set volatile status effect. You can be inflicted with multiple volatile status effects at once.
+	
+	// Healing effects
+	RestoreHP, // Normal HP recovery effect
+	RestoreHPSet(u16), //
+	RestoreHPPercentage(u8),
+	CureSetNVStatus(NonVolatileStatus), // Removes the set non-volatile status effect from the target
+	CureAllNVStatus,
+	CureSetVStatus(VolatileStatus), // Removes the set volatile status effect from the target
+	CureAllVStatus,
+	CureAllStatus,
+	
+	// Beneficial-to-self effects
+	DrainHP(u8), // Restores u8% of the user's HP
+	
+	// Harmful-to-self effects
+	RecoilSet(u16), // Takes set damage if the attack connects
+	RecoilPercentOfDamage(u8), // Takes set damage if the attack connects
+}
+
+pub enum NonVolatileStatus {
+	Poison, // Takes (40 - Constitution)% of your max HP of damage every turn. After taking damage, performs a constitution saving throw that, if successful, cures the status effect
+	Burn, // Takes 10% of the user's max HP every turn. After taking damage, performs a dexterity saving throw that, if successful, cures the status effect.
+	Illness, // Takes (20 - (Constitution / 2))% of your max HP of damage every turn. Also treats Constitution as 0 for the sake of damage calculation and saving throws.
+	Chill, // Treats Dexterity as if it is 0 for the sake of all calculations involving it.
+	Freeze, // Prevents movement. Has a 20% chance to expire at the end of the turn. When it expires,
+	Petrify, // Prevents movement. Gains a Slash resistance, but will die in one hit to an Impact attack.
+	Lagomorph, // Treats Strength as if it is 0 for the sake of all calculations involving it. Prevents negotiation.
+	Silence, // Prevents the afflicted character from using special attacks
+	Weak, // Halves Strength and Constitution as well as the damage of all the user's physical attacks
+	Broken, // Sets AC to 0
+}
+
+pub enum VolatileStatus {
+	Charm, // Automatically moves during the player turn. Attacks allies.
+	Confusion, // Randomly selects a target from anyone, including heroes
+	Halt, // Prevents movement. Has a 15% chance to expire every turn.
+	Bleeding, // Takes 5% of your max HP of damage every turn. Prevents healing.
+	Stun, // Basically the same as Halt
+}
+
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub enum Element {
 	// Physical element types

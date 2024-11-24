@@ -70,6 +70,7 @@ pub struct Item<'a> {
 	pub is_key_item: bool, // If true, this item cannot be removed from the inventory outside of set events
 	pub material: Material,
 	pub equipment_data: Option<EquipmentData>, // If None, it can't be equipped.
+	pub value: u32 // Coin value of the item
 }
 
 #[derive(Copy, Clone, PartialEq, PartialOrd)]
@@ -118,7 +119,6 @@ pub struct WeaponData {
 pub struct ArmourData {
 	pub ac: u8, // Armour class
 	pub mr: u8, // Magic Resistance
-	            //pub reverse_mr: bool // Potential cheat to reverse
 }
 
 // ITEMS
@@ -131,6 +131,7 @@ pub const ITEM_TONIC: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 20,
 };
 
 pub const ITEM_POTION: Item = Item {
@@ -139,6 +140,7 @@ pub const ITEM_POTION: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 50,
 };
 
 pub const ITEM_SUPER_POTION: Item = Item {
@@ -148,6 +150,7 @@ pub const ITEM_SUPER_POTION: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 100,
 };
 
 pub const ITEM_HYPER_POTION: Item = Item {
@@ -157,6 +160,7 @@ pub const ITEM_HYPER_POTION: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 200,
 };
 
 pub const ITEM_OMEGA_POTION: Item = Item {
@@ -166,6 +170,7 @@ pub const ITEM_OMEGA_POTION: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 3000,
 };
 
 // MP Recovery
@@ -176,6 +181,7 @@ pub const ITEM_LESSER_ETHER: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 35,
 };
 
 pub const ITEM_ETHER: Item = Item {
@@ -185,6 +191,7 @@ pub const ITEM_ETHER: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 85,
 };
 
 pub const ITEM_HIGH_ETHER: Item = Item {
@@ -193,6 +200,7 @@ pub const ITEM_HIGH_ETHER: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 105,
 };
 
 pub const ITEM_GREAT_ETHER: Item = Item {
@@ -202,6 +210,7 @@ pub const ITEM_GREAT_ETHER: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 3500,
 };
 
 pub const ITEM_ELIXR: Item = Item {
@@ -211,6 +220,7 @@ pub const ITEM_ELIXR: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 7500,
 };
 
 // Status curatives
@@ -222,6 +232,7 @@ pub const ITEM_ANTIDOTE: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 25,
 };
 
 pub const ITEM_BURN_CREAM: Item = Item {
@@ -230,6 +241,7 @@ pub const ITEM_BURN_CREAM: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 20,
 };
 
 pub const ITEM_MEDICINE: Item = Item {
@@ -239,6 +251,7 @@ pub const ITEM_MEDICINE: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 35,
 };
 
 pub const ITEM_HOLY_WATER: Item = Item {
@@ -248,6 +261,7 @@ pub const ITEM_HOLY_WATER: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 50, // Church mandated tax. They're a bunch of capitalisitic jerks in this game.
 };
 
 pub const ITEM_WARM_UP: Item = Item {
@@ -257,6 +271,7 @@ pub const ITEM_WARM_UP: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 30,
 };
 
 pub const ITEM_EROSIVE: Item = Item {
@@ -266,6 +281,7 @@ pub const ITEM_EROSIVE: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 80,
 };
 
 pub const ITEM_MAGIC_CARROT: Item = Item {
@@ -274,6 +290,7 @@ pub const ITEM_MAGIC_CARROT: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 70,
 };
 
 pub const ITEM_SPEAKEASY: Item = Item {
@@ -282,6 +299,7 @@ pub const ITEM_SPEAKEASY: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 40,
 };
 
 pub const ITEM_MUSSLES: Item = Item {
@@ -290,6 +308,7 @@ pub const ITEM_MUSSLES: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 25,
 };
 
 pub const ITEM_REARMOUR: Item = Item {
@@ -299,6 +318,7 @@ pub const ITEM_REARMOUR: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 25,
 };
 
 pub const ITEM_PANCEA: Item = Item {
@@ -307,6 +327,7 @@ pub const ITEM_PANCEA: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 150,
 };
 
 // Volatile
@@ -317,6 +338,7 @@ pub const ITEM_SLAP_SYRUP: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 35,
 };
 
 pub const ITEM_CLOCKCORN: Item = Item {
@@ -326,6 +348,7 @@ pub const ITEM_CLOCKCORN: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 50,
 };
 
 pub const ITEM_BANDAGE: Item = Item {
@@ -334,6 +357,7 @@ pub const ITEM_BANDAGE: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 15,
 };
 
 pub const ITEM_DISTUN: Item = Item {
@@ -342,6 +366,7 @@ pub const ITEM_DISTUN: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 40,
 };
 
 // Revival
@@ -352,6 +377,7 @@ pub const ITEM_PHOENIX_FEATHER: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 150,
 };
 
 // Field
@@ -363,6 +389,7 @@ pub const ITEM_FIREWOOD: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 35,
 };
 
 pub const ITEM_SLOP: Item = Item {
@@ -372,6 +399,7 @@ pub const ITEM_SLOP: Item = Item {
 	is_key_item: false,
 	material: Material::Other,
 	equipment_data: None,
+	value: 5,
 };
 
 // Weaponry
@@ -400,6 +428,7 @@ pub const ITEM_WOODEN_SWORD: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 20,
 };
 
 pub const ITEM_COPPER_SHORTSWORD: Item = Item {
@@ -424,6 +453,7 @@ pub const ITEM_COPPER_SHORTSWORD: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 35,
 };
 
 // Basic proficency required
@@ -448,6 +478,7 @@ pub const ITEM_BRONZE_GLADIUS: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_IRON_SWORD: Item = Item {
@@ -471,6 +502,7 @@ pub const ITEM_IRON_SWORD: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 80,
 };
 
 pub const ITEM_GOLDEN_SWORD: Item = Item {
@@ -494,6 +526,7 @@ pub const ITEM_GOLDEN_SWORD: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 500,
 };
 
 // Intermediate proficency required
@@ -519,6 +552,7 @@ pub const ITEM_LONGSWORD: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 115,
 };
 
 pub const ITEM_TALWAR: Item = Item { // This is a reference to the earlier Ys games which feature a Talwar (https://en.wikipedia.org/wiki/Talwar) as a mid-tier weapon.
@@ -543,6 +577,7 @@ pub const ITEM_TALWAR: Item = Item { // This is a reference to the earlier Ys ga
 		}),
 		armour_data: None,
 	}),
+	value: 140,
 };
 
 pub const ITEM_SHADOWBLADE: Item = Item {
@@ -567,6 +602,7 @@ pub const ITEM_SHADOWBLADE: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 140,
 };
 
 pub const ITEM_DIAMOND_SWORD: Item = Item { // Painfully obvious Minecraft reference
@@ -591,6 +627,7 @@ pub const ITEM_DIAMOND_SWORD: Item = Item { // Painfully obvious Minecraft refer
 		}),
 		armour_data: None,
 	}),
+	value: 760,
 };
 
 // Advanced proficiency required
@@ -616,6 +653,7 @@ pub const ITEM_YANMAODAO: Item = Item { // Used a Chinese sword instead of a Kat
 		}),
 		armour_data: None,
 	}),
+	value: 180,
 };
 
 pub const ITEM_ENCHANTMENT_SWORD: Item = Item {
@@ -640,6 +678,7 @@ pub const ITEM_ENCHANTMENT_SWORD: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 230,
 };
 
 pub const ITEM_LASERBLADE: Item = Item { // Painfully obvious Star Wars reference
@@ -664,10 +703,10 @@ pub const ITEM_LASERBLADE: Item = Item { // Painfully obvious Star Wars referenc
 		}),
 		armour_data: None,
 	}),
+	value: 265,
 };
 
 pub const ITEM_DRAGON_SWORD: Item = Item {
-	// Painfully obvious Star Wars reference
 	name: "Dragon Sword",
 	description: "Weapon crafted from crimson ore. It crackles with flames when unsheathed.",
 
@@ -688,6 +727,7 @@ pub const ITEM_DRAGON_SWORD: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 // Artefact Weapons - Master proficency required. All Artefacts are alignment locked.
@@ -713,6 +753,7 @@ pub const ITEM_CALEDFWLCH: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 500,
 };
 
 pub const ITEM_CLAIOMH_SOLAIS: Item = Item {
@@ -736,6 +777,7 @@ pub const ITEM_CLAIOMH_SOLAIS: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 500,
 };
 
 //Neutral-aligned
@@ -760,6 +802,7 @@ pub const ITEM_GRAM: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 500,
 };
 
 pub const ITEM_DYRNWYN: Item = Item {
@@ -783,6 +826,7 @@ pub const ITEM_DYRNWYN: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 500,
 };
 
 // Chaos-aligned
@@ -807,6 +851,7 @@ pub const ITEM_DAINSLEIF: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 500,
 };
 
 pub const ITEM_TYRFING: Item = Item {
@@ -830,6 +875,7 @@ pub const ITEM_TYRFING: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 500,
 };
 
 // Greatswords
@@ -856,6 +902,7 @@ pub const ITEM_WOODEN_GREATSWORD: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_STONE_SWORD: Item = Item {
@@ -880,6 +927,7 @@ pub const ITEM_STONE_SWORD: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 // Basic proficiency required
@@ -905,6 +953,7 @@ pub const ITEM_HEAVY_BRONZE_SWORD: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_CLAYMORE: Item = Item {
@@ -928,6 +977,7 @@ pub const ITEM_CLAYMORE: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_WEREBREAKER: Item = Item {
@@ -951,6 +1001,7 @@ pub const ITEM_WEREBREAKER: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 // Intermediate proficency required
@@ -976,6 +1027,7 @@ pub const ITEM_ZWEIHANDER: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_NODACHI: Item = Item {
@@ -1000,6 +1052,7 @@ pub const ITEM_NODACHI: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_DEVIL_SWORD: Item = Item {
@@ -1023,6 +1076,7 @@ pub const ITEM_DEVIL_SWORD: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_CHANGDAO: Item = Item {
@@ -1047,6 +1101,7 @@ pub const ITEM_CHANGDAO: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 // Advanced proficency required
@@ -1071,6 +1126,7 @@ pub const ITEM_BEARING_SWORD: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_PALADINS_GREATSWORD: Item = Item {
@@ -1095,6 +1151,7 @@ pub const ITEM_PALADINS_GREATSWORD: Item = Item {
 		}),
 		armour_data: Some(ArmourData { ac: 20, mr: 50 }),
 	}),
+	value: 50,
 };
 
 pub const ITEM_BUSTER_SWORD: Item = Item {
@@ -1119,6 +1176,7 @@ pub const ITEM_BUSTER_SWORD: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_THANATOS: Item = Item {
@@ -1143,6 +1201,7 @@ pub const ITEM_THANATOS: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 // Artifact weapons. These have an alignment score requirement in order to weild
@@ -1170,6 +1229,7 @@ pub const ITEM_DURENDAL: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_LAHAT_CHEREB: Item = Item {
@@ -1193,6 +1253,7 @@ pub const ITEM_LAHAT_CHEREB: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_TIZONA: Item = Item {
@@ -1216,6 +1277,7 @@ pub const ITEM_TIZONA: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_CALDABOLG: Item = Item {
@@ -1239,6 +1301,7 @@ pub const ITEM_CALDABOLG: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_SKOFNUNG: Item = Item {
@@ -1262,6 +1325,7 @@ pub const ITEM_SKOFNUNG: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_MURAMASA: Item = Item {
@@ -1285,6 +1349,7 @@ pub const ITEM_MURAMASA: Item = Item {
 		}),
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 // Armour
@@ -1303,6 +1368,7 @@ pub const ITEM_HELM_OF_OPPOSITE_ALIGNMENT: Item = Item { // This should invert a
 		weapon_data: None,
 		armour_data: None,
 	}),
+	value: 50,
 };
 
 pub const ITEM_HELM_OF_UNALIGNMENT: Item = Item { // This should treat the alignmenmt score as if it is 0 if any character is wearing it.
@@ -1320,4 +1386,5 @@ pub const ITEM_HELM_OF_UNALIGNMENT: Item = Item { // This should treat the align
 		weapon_data: None,
 		armour_data: None,
 	}),
+	value: 50,
 };
