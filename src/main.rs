@@ -76,6 +76,7 @@ pub struct GlobalData<'a> {
 	players: Vec<Hero<'a>>,
 	alignment: i8,
 	inventory: Vec<Item<'a>>,
+	time: Time
 }
 
 // In game time for the day-night cycle
@@ -90,8 +91,23 @@ impl Time {
 			0 => "Midnight",
 			1..=3 => "Late Night",
 			4..=6 => "Dawn",
-			7..=11 => "Morning",
+			7..=10 => "Morning",
+			11..=12 => "Midday",
+			13..=15 => "Afternoon",
+			16..=18 => "Evening",
+			19..=21 => "Dusk",
+			22..=24 => "Night",
 			_ => "TEMPORAL DISTORTION" // silly fallback value
+		}
+	}
+	
+	fn advance(&mut self, amount: u8) {
+		self.minutes += amount;
+		
+		while self.minutes >= 60 {
+			self.minutes -= 60;
+			self.hours += 1;
+			if self.hours > 24 {self.hours = 0};
 		}
 	}
 }
@@ -152,7 +168,8 @@ impl<'a> GlobalData<'a> {
 	
 	// Intended for instances where the game needs to check for and remove a specific item
 	// Returns true if the item is successfully removed
-	fn remove_item_from_inventory(&mut self, item: Item<'a>) -> bool {
+	// Currently unused
+	/*fn remove_item_from_inventory(&mut self, item: Item<'a>) -> bool {
 		for counter in 0..self.inventory.len() {
 			if self.inventory[counter] == item {
 				self.inventory.remove(counter);
@@ -160,7 +177,7 @@ impl<'a> GlobalData<'a> {
 			}
 		}
 		false
-	}
+	}*/
 }
 
 // Actual code begins here
@@ -178,6 +195,7 @@ fn main() {
 		players: vec![player],
 		alignment: 0,
 		inventory: vec![], // Start with an empty inventory
+		time: Time {hours: 12, minutes: 9}
 	};
 	global.players.push(Hero {
 		name: "Another Person",
@@ -223,7 +241,7 @@ fn main() {
 	println!("{}, be ready to die miserably", player.name);
 	global.heal_and_reset_party_stat_caps(); // Reinitialise the party's data before starting
 
-	show_stat_row(&global, get_title(global.alignment, player.stats.level));
+	show_stat_row(&global, get_title(global.alignment, player.stats.level), CASTLE_1F_THRONE_ROOM.name);
 	player_action(CASTLE_1F_THRONE_ROOM, global);
 
 	//exit(0) // Close the program peacefully when the game ends.
@@ -232,30 +250,32 @@ fn main() {
 // Functions and whatnot. I already miss Python.
 
 // This code is probably bad... yet part of me thinks this is the right way to do it?
-fn show_stat_row(global: &GlobalData, title: String) {
+fn show_stat_row(global: &GlobalData, title: String, mapname: &str) {
 	println!(
 		"
         {} the {title}
     Level {},     EXP: {}/{} ({} until next level)
     HP: {}/{}     MP: {}/{}    Status: Normal
-    Area: Castle 1F: Throne Room
+    Area: {}
         ",
 		global.players[0].name,
 		global.players[0].stats.level,
 		global.players[0].exp,
-		(5 * global.players[0].stats.level + global.players[0].stats.level),
+		(10 * global.players[0].stats.level + global.players[0].stats.level),
 		global.players[0].get_remaining_exp(),
 		global.players[0].hp,
 		global.players[0].max_hp,
 		global.players[0].mp,
-		global.players[0].max_mp
+		global.players[0].max_mp,
+		mapname
 	);
 }
 
 // Text parser. This might also be better off in its own file.
 // Also, it's constantly calling itself which I don't think is particularly good code.
 fn player_action(zone: Zone, mut global: GlobalData) {
-	// Hero parameter is temporary until I can figure out how to implement globals
+	global.time.advance(1);
+	
 	// Terminate the game if you have run out of health
 	if global.is_party_wiped() {
 		println!("\n \x1b[31;1;4mGAME OVER!\x1b[0m \n");
@@ -400,9 +420,10 @@ fn player_action(zone: Zone, mut global: GlobalData) {
 				}
 
 				"info" => {
-					show_stat_row(&global, get_title(0, global.players[0].stats.level));
+					show_stat_row(&global, get_title(0, global.players[0].stats.level), zone.name);
 					println!("You are {}", get_alignment(global.alignment));
 					println!("You have {} gold coins", global.coins);
+					println!("The time is {}:{}. It is currently {}", global.time.hours, global.time.minutes, global.time.get_time_of_day_string())
 				}
 				
 				"list" => {
@@ -462,7 +483,7 @@ fn player_action(zone: Zone, mut global: GlobalData) {
 						println!("You dirty cheater!");
 
 						match noun {
-							"exp"  => global.give_party_exp(u16::MAX), // Gains lots of experience
+							"exp"  => global.give_party_exp(u16::MAX - 1), // Gains lots of experience
 							// Cheat shops
 							"shop" => global = SAMPLE_CHEAT_SHOP.open(global),
 							"shop2" => global = SAMPLE_CHEAT_SHOP2.open(global),
@@ -515,9 +536,10 @@ fn player_action(zone: Zone, mut global: GlobalData) {
 					"
 List of commands:
 
-    go - Move to a connected area. You can go Up, Down, North, East, South or West
+    go   - Move to a connected area. You can go Up, Down, North, East, South or West
     talk - Chat with an NPC
     take - Add an item to your inventory
+    use  - Use an item from your inventory
 	hunt - Force a random encounter
     info - Print information about the party
     help - Shows this text

@@ -515,6 +515,8 @@ fn calculate_damage(
 
 	damage = (100 + variance) * damage / 100;
 	println!("{damage}");
+	
+	// Roll critical damage
 
 	// Absolute final fallback to ensure that you always deal at least 1 damage
 
@@ -562,6 +564,7 @@ fn generate_weapon_attack(weapon: Option<Item>) -> Option<Attack> {
 			cost: 0,
 			category: AttackCategory::Physical,
 			element: unwrapped_data.get_weapon_element(),
+			effect: None,
 			power: 1,
 			hit_rate: unwrapped_data.weapon_data.unwrap().hit_rate,
 			target: TargetClass::Foe,
@@ -573,6 +576,7 @@ fn generate_weapon_attack(weapon: Option<Item>) -> Option<Attack> {
 			cost: 0,
 			category: AttackCategory::Physical,
 			element: Element::Neutral,
+			effect: None,
 			power: 1,
 			hit_rate: 90,
 			target: TargetClass::Foe,

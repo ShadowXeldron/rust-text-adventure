@@ -44,9 +44,9 @@ impl<'a> Hero<'a> {
 
 			// A proper level curve should be here
 			loop {
-				if self.exp >= (5 * level + level) {
+				if self.exp >= (10 * level + level) {
 					// Lower experience points by the EXP formula
-					self.exp -= 5 * level + level;
+					self.exp -= 10 * level + level;
 					self.gain_level()
 				} else {
 					break;
@@ -144,7 +144,7 @@ impl<'a> Hero<'a> {
 	pub fn get_remaining_exp(&self) -> u16 {
 		// Store level as u16 for stats
 		let level: u16 = self.stats.level.into();
-		(5 * level + level) - self.exp
+		(10 * level + level) - self.exp
 	}
 }
 
